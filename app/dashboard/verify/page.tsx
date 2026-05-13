@@ -53,24 +53,15 @@ export default function VerifyPage() {
           { facingMode: 'environment' },
           { fps: 10, qrbox: { width: 240, height: 240 } },
           async (decodedText: string) => {
-            console.log('RAW SCAN:', JSON.stringify(decodedText))
-
             let qrCode = decodedText.trim()
-
             if (qrCode.includes('/')) {
               const parts = qrCode.split('/')
               qrCode = parts[parts.length - 1]
             }
-
             qrCode = decodeURIComponent(qrCode).trim()
-
-            console.log('EXTRACTED:', JSON.stringify(qrCode))
-
             if (!qrCode) return
-
             await scanner.stop().catch(() => {})
             setScannerOpen(false)
-
             if (typeof window !== 'undefined') {
               window.location.href = `/dashboard/verify?qr_code=${encodeURIComponent(qrCode)}`
             }
@@ -88,11 +79,13 @@ export default function VerifyPage() {
 
   const verifyByQR = async (qrCode: string) => {
     const decoded = decodeURIComponent(qrCode).trim()
-    console.log('SEARCHING FOR:', JSON.stringify(decoded))
 
     setLoading(true)
     setResult(null)
     setStatus('idle')
+
+    // ✅ delay عشان Supabase يخلص الـ write لو جاي بعد check-in
+    await new Promise(res => setTimeout(res, 400))
 
     const { data, error } = await supabase
       .from('tickets')
@@ -106,8 +99,6 @@ export default function VerifyPage() {
       `)
       .eq('qr_code', decoded)
       .single()
-
-    console.log('DB RESULT:', data, 'ERROR:', error)
 
     if (error || !data) { setStatus('notfound'); setLoading(false); return }
     if (data.checked_in) { setResult(data); setStatus('already'); setLoading(false); return }
@@ -123,7 +114,6 @@ export default function VerifyPage() {
     }
   }
 
-  // ✅ handleCheckIn المُصلح
   const handleCheckIn = async () => {
     if (!result) return
     setLoading(true)
@@ -141,7 +131,7 @@ export default function VerifyPage() {
       return
     }
 
-    // ✅ حدّث الـ state مباشرة بدون ما نجيب البيانات تاني
+    // ✅ حدّث الـ state فوراً من غير ما نجيب البيانات تاني
     setResult({ ...result, checked_in: true, checked_in_at: now })
     setStatus('already')
     setLoading(false)
