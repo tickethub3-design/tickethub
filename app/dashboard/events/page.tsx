@@ -12,15 +12,12 @@ const empty = {
   transfer_number: '',
   image_url: '',
   is_active: true,
-  // Standing
   standing_wave_1_price: '',
   standing_wave_2_price: '',
   standing_wave_3_price: '',
-  // Backstage
   backstage_wave_1_price: '',
   backstage_wave_2_price: '',
   backstage_wave_3_price: '',
-  // VIP
   vip_wave_1_price: '',
   vip_wave_2_price: '',
   vip_wave_3_price: '',
@@ -71,7 +68,7 @@ export default function DashboardEvents() {
 
     const payload: any = {
       title: form.title,
-        slug: form.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''), // ← أضف السطر ده
+      slug: form.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
       description: form.description,
       date: form.date,
       location: form.location,
@@ -79,31 +76,24 @@ export default function DashboardEvents() {
       image_url: form.image_url || null,
       is_active: !!form.is_active,
       transfer_number: form.transfer_number || null,
-
-      // Standing
       standing_wave_1_price: Number(form.standing_wave_1_price),
       standing_wave_1_sold_out: form.standing_wave_1_sold_out ?? false,
       standing_wave_2_price: form.standing_wave_2_price ? Number(form.standing_wave_2_price) : null,
       standing_wave_2_sold_out: form.standing_wave_2_sold_out ?? false,
       standing_wave_3_price: form.standing_wave_3_price ? Number(form.standing_wave_3_price) : null,
       standing_wave_3_sold_out: form.standing_wave_3_sold_out ?? false,
-
-      // Backstage
       backstage_wave_1_price: form.backstage_wave_1_price ? Number(form.backstage_wave_1_price) : null,
       backstage_wave_1_sold_out: form.backstage_wave_1_sold_out ?? false,
       backstage_wave_2_price: form.backstage_wave_2_price ? Number(form.backstage_wave_2_price) : null,
       backstage_wave_2_sold_out: form.backstage_wave_2_sold_out ?? false,
       backstage_wave_3_price: form.backstage_wave_3_price ? Number(form.backstage_wave_3_price) : null,
       backstage_wave_3_sold_out: form.backstage_wave_3_sold_out ?? false,
-
-      // VIP
       vip_wave_1_price: form.vip_wave_1_price ? Number(form.vip_wave_1_price) : null,
       vip_wave_1_sold_out: form.vip_wave_1_sold_out ?? false,
       vip_wave_2_price: form.vip_wave_2_price ? Number(form.vip_wave_2_price) : null,
       vip_wave_2_sold_out: form.vip_wave_2_sold_out ?? false,
       vip_wave_3_price: form.vip_wave_3_price ? Number(form.vip_wave_3_price) : null,
       vip_wave_3_sold_out: form.vip_wave_3_sold_out ?? false,
-
       price: form.standing_wave_1_price ? Number(form.standing_wave_1_price) : null,
     }
 
@@ -153,11 +143,31 @@ export default function DashboardEvents() {
     if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  // ✅ handleDelete المُصلح — بيحذف tickets ثم reservations ثم event
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this event? This cannot be undone.')) return
-    const { error } = await supabase.from('events').delete().eq('id', id)
-    if (error) { alert('Delete error: ' + error.message); return }
+    if (!confirm('Delete this event and ALL its reservations and tickets? This cannot be undone.')) return
+    setLoading(true)
+
+    const { error: ticketsError } = await supabase
+      .from('tickets')
+      .delete()
+      .eq('event_id', id)
+    if (ticketsError) { alert('Error deleting tickets: ' + ticketsError.message); setLoading(false); return }
+
+    const { error: resError } = await supabase
+      .from('reservations')
+      .delete()
+      .eq('event_id', id)
+    if (resError) { alert('Error deleting reservations: ' + resError.message); setLoading(false); return }
+
+    const { error: eventError } = await supabase
+      .from('events')
+      .delete()
+      .eq('id', id)
+    if (eventError) { alert('Error deleting event: ' + eventError.message); setLoading(false); return }
+
     await load()
+    setLoading(false)
   }
 
   const handleFinish = async (id: string, current: boolean) => {
@@ -173,7 +183,6 @@ export default function DashboardEvents() {
     await load()
   }
 
-  // ─── WAVE ACTION FACTORY ───────────────────────────────────────────────────
   const makeWaveHandler = (type: 'standing' | 'backstage' | 'vip') =>
     async (event: any) => {
       const w1p = event[`${type}_wave_1_price`]
@@ -184,7 +193,6 @@ export default function DashboardEvents() {
       const w3s = event[`${type}_wave_3_sold_out`]
       const label = type.toUpperCase()
 
-      // لو مفيش سعر W1 خالص
       if (w1p == null) {
         if (!confirm(`Set ${label} WAVE 1 price and open it?`)) return
         const priceStr = prompt(`Enter ${label} WAVE 1 price (EGP):`, '')
@@ -194,7 +202,6 @@ export default function DashboardEvents() {
         await load(); return
       }
 
-      // W1 مفتوحة → Sold Out + افتح W2
       if (!w1s) {
         if (!confirm(`Mark ${label} WAVE 1 as SOLD OUT and open WAVE 2?`)) return
         const priceStr = prompt(`Enter ${label} WAVE 2 price (EGP):`, w2p ? String(w2p) : '')
@@ -204,7 +211,6 @@ export default function DashboardEvents() {
         await load(); return
       }
 
-      // W2 مفتوحة → Sold Out + افتح W3
       if (w1s && w2p != null && !w2s) {
         if (!confirm(`Mark ${label} WAVE 2 as SOLD OUT and open WAVE 3?`)) return
         const priceStr = prompt(`Enter ${label} WAVE 3 price (EGP):`, w3p ? String(w3p) : '')
@@ -214,7 +220,6 @@ export default function DashboardEvents() {
         await load(); return
       }
 
-      // W3 مفتوحة → Sold Out
       if (w1s && w2s && w3p != null && !w3s) {
         if (!confirm(`Mark ${label} WAVE 3 as SOLD OUT (no more ${type})?`)) return
         await supabase.from('events').update({ [`${type}_wave_3_sold_out`]: true }).eq('id', event.id)
@@ -227,7 +232,6 @@ export default function DashboardEvents() {
   const handleStandingWaveAction  = makeWaveHandler('standing')
   const handleBackstageWaveAction = makeWaveHandler('backstage')
   const handleVipWaveAction       = makeWaveHandler('vip')
-  // ──────────────────────────────────────────────────────────────────────────
 
   const inputStyle: React.CSSProperties = {
     width: '100%',
@@ -289,7 +293,6 @@ export default function DashboardEvents() {
           >{showForm ? 'Cancel' : '+ New Event'}</button>
         </div>
 
-        {/* Success msg */}
         {msg && (
           <div style={{ background: 'rgba(39,174,96,0.1)', border: '1px solid rgba(39,174,96,0.25)', borderRadius: 12, padding: '12px 20px', color: '#27AE60', fontSize: 14, marginBottom: 24 }}>{msg}</div>
         )}
@@ -302,7 +305,6 @@ export default function DashboardEvents() {
             </p>
 
             <form onSubmit={handleSubmit}>
-              {/* Image Upload */}
               <div style={{ marginBottom: 20 }}>
                 <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 10, letterSpacing: '2px', fontWeight: 700, margin: '0 0 10px' }}>EVENT IMAGE</p>
                 <div onClick={() => fileRef.current?.click()} style={{
@@ -330,7 +332,6 @@ export default function DashboardEvents() {
                 {uploading && <p style={{ color: '#F0A500', fontSize: 11, marginTop: 8 }}>⏳ Please wait for image to finish uploading...</p>}
               </div>
 
-              {/* Basic Info */}
               {sectionLabel('BASIC INFO', 'rgba(255,255,255,0.3)')}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
                 <input style={inputStyle} placeholder="Event title *" required value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} />
@@ -341,7 +342,6 @@ export default function DashboardEvents() {
               <input style={{ ...inputStyle, marginBottom: 14 }} placeholder="💳 Transfer Number" value={form.transfer_number} onChange={e => setForm({ ...form, transfer_number: e.target.value })} />
               <textarea style={{ ...inputStyle, minHeight: 100, resize: 'vertical', marginBottom: 14 }} placeholder="Description *" required value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} />
 
-              {/* Standing */}
               {sectionLabel('🟡 STANDING WAVES', '#F0A500')}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 14 }}>
                 <input style={inputStyle} type="number" placeholder="Wave 1 Price (EGP) *" required value={form.standing_wave_1_price} onChange={e => setForm({ ...form, standing_wave_1_price: e.target.value })} />
@@ -349,7 +349,6 @@ export default function DashboardEvents() {
                 <input style={inputStyle} type="number" placeholder="Wave 3 (optional)" value={form.standing_wave_3_price} onChange={e => setForm({ ...form, standing_wave_3_price: e.target.value })} />
               </div>
 
-              {/* Backstage */}
               {sectionLabel('🟣 BACKSTAGE WAVES', '#8b5cf6')}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 14 }}>
                 <input style={inputStyle} type="number" placeholder="Wave 1 (optional)" value={form.backstage_wave_1_price} onChange={e => setForm({ ...form, backstage_wave_1_price: e.target.value })} />
@@ -357,7 +356,6 @@ export default function DashboardEvents() {
                 <input style={inputStyle} type="number" placeholder="Wave 3 (optional)" value={form.backstage_wave_3_price} onChange={e => setForm({ ...form, backstage_wave_3_price: e.target.value })} />
               </div>
 
-              {/* VIP */}
               {sectionLabel('VIP WAVES', '#F0A500')}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 20 }}>
                 <input style={{ ...inputStyle, borderColor: 'rgba(240,165,0,0.2)' }} type="number" placeholder="VIP Wave 1 (optional)" value={form.vip_wave_1_price} onChange={e => setForm({ ...form, vip_wave_1_price: e.target.value })} />
@@ -365,7 +363,6 @@ export default function DashboardEvents() {
                 <input style={{ ...inputStyle, borderColor: 'rgba(240,165,0,0.2)' }} type="number" placeholder="VIP Wave 3 (optional)" value={form.vip_wave_3_price} onChange={e => setForm({ ...form, vip_wave_3_price: e.target.value })} />
               </div>
 
-              {/* Visibility */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
                 <input type="checkbox" id="active" checked={form.is_active} onChange={e => setForm({ ...form, is_active: e.target.checked })} />
                 <label htmlFor="active" style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13, cursor: 'pointer' }}>Visible to public</label>
@@ -394,13 +391,11 @@ export default function DashboardEvents() {
               display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap',
               opacity: event.is_finished ? 0.6 : 1,
             }}>
-              {/* Image */}
               {event.image_url
                 ? <img src={event.image_url} alt={event.title} style={{ width: 80, height: 80, borderRadius: 12, objectFit: 'cover', flexShrink: 0, filter: event.is_finished ? 'grayscale(80%)' : 'none' }} />
                 : <div style={{ width: 80, height: 80, borderRadius: 12, background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, flexShrink: 0 }}>🎶</div>
               }
 
-              {/* Info */}
               <div style={{ flex: 1, minWidth: 220 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6, flexWrap: 'wrap' }}>
                   <h3 style={{ color: event.is_finished ? '#555' : '#fff', fontSize: 16, fontWeight: 800, margin: 0, fontFamily: 'Poppins, sans-serif' }}>{event.title}</h3>
@@ -422,9 +417,7 @@ export default function DashboardEvents() {
                   <p style={{ color: '#F0A500', fontSize: 12, fontWeight: 600, margin: '2px 0 6px' }}>💳 Transfer: {event.transfer_number}</p>
                 )}
 
-                {/* Prices grid */}
                 <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 8 }}>
-                  {/* Standing */}
                   <div>
                     <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 9, letterSpacing: '2px', fontWeight: 700, margin: '0 0 4px' }}>STANDING</p>
                     {[1, 2, 3].map(w => event[`standing_wave_${w}_price`] != null && (
@@ -433,7 +426,6 @@ export default function DashboardEvents() {
                       </p>
                     ))}
                   </div>
-                  {/* Backstage */}
                   {event.backstage_wave_1_price != null && (
                     <div>
                       <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 9, letterSpacing: '2px', fontWeight: 700, margin: '0 0 4px' }}>BACKSTAGE</p>
@@ -444,7 +436,6 @@ export default function DashboardEvents() {
                       ))}
                     </div>
                   )}
-                  {/* VIP */}
                   {event.vip_wave_1_price != null && (
                     <div>
                       <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 9, letterSpacing: '2px', fontWeight: 700, margin: '0 0 4px' }}>VIP</p>
@@ -458,9 +449,7 @@ export default function DashboardEvents() {
                 </div>
               </div>
 
-              {/* Actions */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 220 }}>
-                {/* Wave Buttons */}
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 4 }}>
                   {[
                     { label: '🟡 STANDING WAVE', fn: handleStandingWaveAction, clr: '#F0A500', bg: 'rgba(240,165,0,0.08)' },
@@ -476,7 +465,6 @@ export default function DashboardEvents() {
                   ))}
                 </div>
 
-                {/* Base Actions */}
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                   <button onClick={() => handleFinish(event.id, event.is_finished)} style={{
                     background: event.is_finished ? 'rgba(255,255,255,0.03)' : 'rgba(39,174,96,0.08)',
