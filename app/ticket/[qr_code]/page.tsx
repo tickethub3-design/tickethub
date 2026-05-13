@@ -7,7 +7,7 @@ import QRCode from 'qrcode'
 const typeConfig: Record<string, { color: string; bg: string; border: string; label: string; accent: string }> = {
   standing:  { color: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0', label: 'STANDING',  accent: '#22c55e' },
   backstage: { color: '#7c3aed', bg: '#faf5ff', border: '#e9d5ff', label: 'BACKSTAGE', accent: '#a855f7' },
-  vip:       { color: '#d97706', bg: '#fffbeb', border: '#fde68a', label: 'VIP',    accent: '#f59e0b' },
+  vip:       { color: '#d97706', bg: '#fffbeb', border: '#fde68a', label: 'VIP',        accent: '#f59e0b' },
 }
 
 export default function TicketPage({ params }: { params: Promise<{ qr_code: string }> }) {
@@ -27,15 +27,21 @@ export default function TicketPage({ params }: { params: Promise<{ qr_code: stri
       setTicket(data || null)
       setLoading(false)
       if (data?.qr_code) {
-const ticketUrl = `${window.location.origin}/ticket/${data.qr_code}`
-const url = await QRCode.toDataURL(ticketUrl, {
+        const ticketUrl = `${window.location.origin}/ticket/${data.qr_code}`
+        const url = await QRCode.toDataURL(ticketUrl, {
           width: 200, margin: 1,
           color: { dark: '#1e293b', light: '#ffffff' },
         })
         setQrUrl(url)
       }
     }
+
     load()
+
+    // ✅ لما المستخدم يرجع للتاب أو الصفحة يعمل re-fetch تلقائي
+    const handleFocus = () => load()
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
   }, [qr_code])
 
   const handleDownloadPDF = async () => {
@@ -115,15 +121,12 @@ const url = await QRCode.toDataURL(ticketUrl, {
             ? <img src={eventImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
             : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #1A3C5E, #2E75B6)' }} />
           }
-          {/* Gradient overlay */}
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.2) 100%)' }} />
 
-          {/* Type badge */}
           <div style={{ position: 'absolute', top: 16, left: 16, background: tc.bg, border: `1px solid ${tc.border}`, color: tc.color, padding: '5px 12px', borderRadius: 999, fontSize: 10, fontWeight: 800, letterSpacing: '1.5px' }}>
             {tc.label}
           </div>
 
-          {/* Event info overlay */}
           <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '16px 18px 18px' }}>
             <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 9, letterSpacing: '3px', fontWeight: 700, margin: '0 0 5px' }}>EVENT</p>
             <h2 style={{ fontFamily: 'Poppins, sans-serif', color: '#fff', fontSize: 16, fontWeight: 900, margin: '0 0 8px', lineHeight: 1.25, textShadow: '0 2px 8px rgba(0,0,0,0.6)' }}>
@@ -143,9 +146,7 @@ const url = await QRCode.toDataURL(ticketUrl, {
         {/* ── MIDDLE: Holder Details ── */}
         <div style={{ flex: 1, padding: '24px 22px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minWidth: 0 }}>
 
-          {/* Header row */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
-            {/* Ticket number */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ width: 36, height: 36, borderRadius: 10, background: tc.bg, border: `1px solid ${tc.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <span style={{ color: tc.color, fontFamily: 'Poppins, sans-serif', fontWeight: 900, fontSize: 13 }}>
@@ -155,7 +156,6 @@ const url = await QRCode.toDataURL(ticketUrl, {
               <p style={{ color: '#94a3b8', fontSize: 9, letterSpacing: '2px', fontWeight: 700, margin: 0 }}>TICKET NO.</p>
             </div>
 
-            {/* Status pill */}
             <div style={{
               background: ticket.checked_in ? '#f0fdf4' : '#f0f9ff',
               border: `1px solid ${ticket.checked_in ? '#bbf7d0' : '#bae6fd'}`,
@@ -169,7 +169,6 @@ const url = await QRCode.toDataURL(ticketUrl, {
             </div>
           </div>
 
-          {/* Holder name */}
           <div style={{ marginBottom: 16 }}>
             <p style={{ color: '#94a3b8', fontSize: 9, letterSpacing: '2px', fontWeight: 700, margin: '0 0 4px' }}>TICKET HOLDER</p>
             <p style={{ color: '#0f172a', fontSize: 19, fontWeight: 900, fontFamily: 'Poppins, sans-serif', margin: 0, letterSpacing: '-0.5px', lineHeight: 1.2 }}>
@@ -177,13 +176,12 @@ const url = await QRCode.toDataURL(ticketUrl, {
             </p>
           </div>
 
-          {/* Info grid */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
             {[
-              { label: 'PHONE',      value: phone },
-              { label: 'TYPE',       value: tc.label,            color: tc.color },
-              { label: 'AMOUNT',     value: `${totalAmount} EGP` },
-              { label: 'CHECK-IN',   value: ticket.checked_in
+              { label: 'PHONE',    value: phone },
+              { label: 'TYPE',     value: tc.label, color: tc.color },
+              { label: 'AMOUNT',   value: `${totalAmount} EGP` },
+              { label: 'CHECK-IN', value: ticket.checked_in
                   ? new Date(ticket.checked_in_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
                   : '—'
               },
@@ -195,7 +193,6 @@ const url = await QRCode.toDataURL(ticketUrl, {
             ))}
           </div>
 
-          {/* Instagram */}
           {instagram && (
             <a href={instagram} target="_blank" rel="noreferrer"
               style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 8, border: '1px solid #fbcfe8', background: '#fdf2f8', color: '#db2777', fontSize: 10, fontWeight: 700, textDecoration: 'none', width: 'fit-content' }}>
@@ -223,7 +220,6 @@ const url = await QRCode.toDataURL(ticketUrl, {
             {qr_code.length > 22 ? qr_code.slice(0, 22) + '…' : qr_code}
           </p>
 
-          {/* Branding */}
           <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: 10, width: '100%', textAlign: 'center' }}>
             <p style={{ color: '#cbd5e1', fontSize: 7, letterSpacing: '1px', margin: '0 0 2px' }}>POWERED BY</p>
             <p style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 800, fontSize: 12, color: '#475569', margin: 0 }}>
