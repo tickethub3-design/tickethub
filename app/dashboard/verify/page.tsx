@@ -53,20 +53,18 @@ export default function VerifyPage() {
           { facingMode: 'environment' },
           { fps: 10, qrbox: { width: 240, height: 240 } },
           async (decodedText: string) => {
-            console.log('RAW SCAN:', JSON.stringify(decodedText)) // 🔍 debug
+            console.log('RAW SCAN:', JSON.stringify(decodedText))
 
             let qrCode = decodedText.trim()
 
-            // لو فيه URL كامل، خد آخر جزء بعد /
             if (qrCode.includes('/')) {
               const parts = qrCode.split('/')
               qrCode = parts[parts.length - 1]
             }
 
-            // decode لو فيه URL encoding
             qrCode = decodeURIComponent(qrCode).trim()
 
-            console.log('EXTRACTED:', JSON.stringify(qrCode)) // 🔍 debug
+            console.log('EXTRACTED:', JSON.stringify(qrCode))
 
             if (!qrCode) return
 
@@ -89,9 +87,8 @@ export default function VerifyPage() {
   }, [scannerOpen])
 
   const verifyByQR = async (qrCode: string) => {
-    // decode لو جاي من URL params
     const decoded = decodeURIComponent(qrCode).trim()
-    console.log('SEARCHING FOR:', JSON.stringify(decoded)) // 🔍 debug
+    console.log('SEARCHING FOR:', JSON.stringify(decoded))
 
     setLoading(true)
     setResult(null)
@@ -110,7 +107,7 @@ export default function VerifyPage() {
       .eq('qr_code', decoded)
       .single()
 
-    console.log('DB RESULT:', data, 'ERROR:', error) // 🔍 debug
+    console.log('DB RESULT:', data, 'ERROR:', error)
 
     if (error || !data) { setStatus('notfound'); setLoading(false); return }
     if (data.checked_in) { setResult(data); setStatus('already'); setLoading(false); return }
@@ -126,27 +123,31 @@ export default function VerifyPage() {
     }
   }
 
+  // ✅ handleCheckIn المُصلح
   const handleCheckIn = async () => {
     if (!result) return
     setLoading(true)
-    const { data, error } = await supabase
-      .from('tickets')
-      .update({ checked_in: true, checked_in_at: new Date().toISOString() })
-      .eq('id', result.id)
-      .select(`
-        id, reservation_id, event_id, user_id,
-        holder_name, holder_phone, holder_instagram,
-        ticket_type, ticket_number, qr_code,
-        checked_in, checked_in_at, created_at,
-        events (title, date, location),
-        reservations (name, phone)
-      `)
-      .single()
 
-    if (error) { console.error('checkin error', error); setLoading(false); return }
-    setResult(data)
+    const now = new Date().toISOString()
+
+    const { error } = await supabase
+      .from('tickets')
+      .update({ checked_in: true, checked_in_at: now })
+      .eq('id', result.id)
+
+    if (error) {
+      console.error('checkin error', error)
+      setLoading(false)
+      return
+    }
+
+    // ✅ حدّث الـ state مباشرة بدون ما نجيب البيانات تاني
+    setResult({ ...result, checked_in: true, checked_in_at: now })
     setStatus('already')
     setLoading(false)
+
+    // ✅ حدّث الـ Next.js cache عشان صفحة التذكرة والبروفايل يتحدثوا
+    router.refresh()
   }
 
   const handleReset = () => {
