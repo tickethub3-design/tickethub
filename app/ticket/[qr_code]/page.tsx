@@ -27,7 +27,8 @@ export default function TicketPage({ params }: { params: Promise<{ qr_code: stri
       setTicket(data || null)
       setLoading(false)
       if (data?.qr_code) {
-        const url = await QRCode.toDataURL(data.qr_code, {
+const ticketUrl = `${window.location.origin}/ticket/${data.qr_code}`
+const url = await QRCode.toDataURL(ticketUrl, {
           width: 200, margin: 1,
           color: { dark: '#1e293b', light: '#ffffff' },
         })
