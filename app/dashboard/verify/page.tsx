@@ -53,14 +53,26 @@ export default function VerifyPage() {
           { facingMode: 'environment' },
           { fps: 10, qrbox: { width: 240, height: 240 } },
           async (decodedText: string) => {
+            console.log('RAW SCAN:', JSON.stringify(decodedText)) // 🔍 debug
+
             let qrCode = decodedText.trim()
+
+            // لو فيه URL كامل، خد آخر جزء بعد /
             if (qrCode.includes('/')) {
               const parts = qrCode.split('/')
               qrCode = parts[parts.length - 1]
             }
+
+            // decode لو فيه URL encoding
+            qrCode = decodeURIComponent(qrCode).trim()
+
+            console.log('EXTRACTED:', JSON.stringify(qrCode)) // 🔍 debug
+
             if (!qrCode) return
+
             await scanner.stop().catch(() => {})
             setScannerOpen(false)
+
             if (typeof window !== 'undefined') {
               window.location.href = `/dashboard/verify?qr_code=${encodeURIComponent(qrCode)}`
             }
@@ -77,9 +89,14 @@ export default function VerifyPage() {
   }, [scannerOpen])
 
   const verifyByQR = async (qrCode: string) => {
+    // decode لو جاي من URL params
+    const decoded = decodeURIComponent(qrCode).trim()
+    console.log('SEARCHING FOR:', JSON.stringify(decoded)) // 🔍 debug
+
     setLoading(true)
     setResult(null)
     setStatus('idle')
+
     const { data, error } = await supabase
       .from('tickets')
       .select(`
@@ -90,8 +107,10 @@ export default function VerifyPage() {
         events (title, date, location),
         reservations (name, phone)
       `)
-      .eq('qr_code', qrCode.trim())
+      .eq('qr_code', decoded)
       .single()
+
+    console.log('DB RESULT:', data, 'ERROR:', error) // 🔍 debug
 
     if (error || !data) { setStatus('notfound'); setLoading(false); return }
     if (data.checked_in) { setResult(data); setStatus('already'); setLoading(false); return }
@@ -152,7 +171,6 @@ export default function VerifyPage() {
           </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          {/* Live indicator */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(39,174,96,0.08)', border: '1px solid rgba(39,174,96,0.2)', borderRadius: 50, padding: '5px 12px' }}>
             <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#27AE60', boxShadow: '0 0 8px rgba(39,174,96,0.8)', display: 'inline-block' }} />
             <span style={{ color: '#27AE60', fontSize: 10, fontWeight: 700, letterSpacing: '2px' }}>GATE LIVE</span>
@@ -252,7 +270,7 @@ export default function VerifyPage() {
             <div style={{ borderRadius: 20, border: '1px solid rgba(231,76,60,0.3)', background: 'rgba(231,76,60,0.05)', padding: 28 }}>
               <p style={{ fontSize: 32, margin: '0 0 12px' }}>❌</p>
               <p style={{ color: '#E74C3C', fontSize: 13, fontWeight: 700, letterSpacing: '2px', margin: '0 0 6px' }}>INVALID TICKET</p>
-              <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13, margin: 0 }}>QR code is not registered in the system. Make sure you're scanning a valid TicketHub ticket.</p>
+              <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13, margin: 0 }}>QR code is not registered in the system.</p>
               <button onClick={handleReset} style={{ marginTop: 20, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)', padding: '10px 20px', borderRadius: 10, fontSize: 12, fontWeight: 700, cursor: 'pointer', letterSpacing: '2px', fontFamily: 'Inter, sans-serif' }}>RESET</button>
             </div>
           )}
