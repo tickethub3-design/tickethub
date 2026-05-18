@@ -1,4 +1,5 @@
 'use client'
+
 import { useState, useEffect, useMemo, use } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -87,7 +88,6 @@ function getWaveInfo(opts: {
   }
 
   if (is_finished) soldOut = true
-
   return { price, label, key, soldOut }
 }
 
@@ -130,6 +130,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [successMsg, setSuccessMsg] = useState('')
+  const [redirecting, setRedirecting] = useState(false)
 
   useEffect(() => {
     supabase
@@ -289,16 +290,18 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
     }
 
     if (totalPeople === 0) {
-      setError('Select at least one ticket.')
+      setError('Please select at least one ticket.')
       return
     }
 
     if (!mainTicketType) {
-      setError('Please select ticket type first.')
+      setError('Please choose a ticket type first.')
       return
     }
 
-    const { data: { user } } = await supabase.auth.getUser()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
 
     if (!user) {
       router.push(`/auth/login?redirect=/events/${id}/reserve`)
@@ -306,18 +309,18 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
     }
 
     if (!name || !phone || !email || !instagram) {
-      setError('Please fill main guest details.')
+      setError('Please complete the main guest details.')
       return
     }
 
     if (!isValidInstagramUrl(instagram)) {
-      setError('Please enter a valid Instagram URL for main guest.')
+      setError('Please enter a valid Instagram URL for the main guest.')
       return
     }
 
     for (const p of people) {
       if (!p.name || !p.phone || !p.instagram) {
-        setError('Please fill all details for each guest.')
+        setError('Please complete all guest details.')
         return
       }
       if (!isValidInstagramUrl(p.instagram)) {
@@ -374,35 +377,46 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
 
     setLoading(false)
     resetForm()
+    setRedirecting(true)
     setSuccessMsg(
-      'Your booking request has been submitted successfully. Please check your profile to follow the booking steps, complete payment within the allowed time, and receive your ticket QR code after confirmation.'
+      'Your booking request has been submitted successfully. You will be redirected to your profile to complete the next steps, follow the payment instructions, and receive your QR ticket after confirmation.'
     )
 
     setTimeout(() => {
       router.push('/profile')
-    }, 2200)
+    }, 2500)
   }
 
   const inputStyle: React.CSSProperties = {
     width: '100%',
     background: 'rgba(255,255,255,0.04)',
-    border: '1px solid rgba(255,255,255,0.08)',
-    borderRadius: 10,
-    padding: '13px 16px',
+    border: '1px solid rgba(255,255,255,0.1)',
+    borderRadius: 14,
+    padding: '15px 16px',
     color: '#fff',
-    fontSize: 14,
+    fontSize: 15,
+    lineHeight: 1.4,
     fontFamily: 'Inter, sans-serif',
     outline: 'none',
     boxSizing: 'border-box',
   }
 
   const labelStyle: React.CSSProperties = {
-    color: 'rgba(255,255,255,0.25)',
-    fontSize: 10,
-    letterSpacing: '2px',
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: 11,
+    letterSpacing: '1.5px',
     fontWeight: 700,
     display: 'block',
     marginBottom: 8,
+  }
+
+  const sectionStyle: React.CSSProperties = {
+    background: 'rgba(255,255,255,0.03)',
+    border: '1px solid rgba(255,255,255,0.08)',
+    borderRadius: 20,
+    padding: 24,
+    marginBottom: 16,
+    boxShadow: '0 10px 30px rgba(0,0,0,0.18)',
   }
 
   const TicketDropdown = ({
@@ -427,37 +441,39 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
         onClick={() => !disabled && setIsOpen(!isOpen)}
         style={{
           width: '100%',
-          background: disabled ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.04)',
-          border: `1px solid ${disabled ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.08)'}`,
-          borderRadius: 10,
-          padding: '13px 16px',
-          color: disabled ? 'rgba(255,255,255,0.15)' : '#fff',
-          fontSize: 14,
+          background: disabled ? 'rgba(255,255,255,0.025)' : 'rgba(255,255,255,0.05)',
+          border: `1px solid ${disabled ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.1)'}`,
+          borderRadius: 14,
+          padding: '15px 16px',
+          color: disabled ? 'rgba(255,255,255,0.25)' : '#fff',
+          fontSize: 15,
           fontFamily: 'Inter, sans-serif',
           cursor: disabled ? 'not-allowed' : 'pointer',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           boxSizing: 'border-box',
+          minHeight: 52,
         }}
       >
-        <span>{disabled ? 'SOLD OUT' : `${value} ticket${value !== 1 ? 's' : ''}`}</span>
-        {!disabled && <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 10 }}>{isOpen ? '▲' : '▼'}</span>}
+        <span>{disabled ? 'Unavailable' : `${value} ticket${value !== 1 ? 's' : ''}`}</span>
+        {!disabled && <span style={{ color: 'rgba(255,255,255,0.45)', fontSize: 10 }}>{isOpen ? '▲' : '▼'}</span>}
       </button>
 
       {isOpen && !disabled && (
         <div
           style={{
             position: 'absolute',
-            top: 'calc(100% + 4px)',
+            top: 'calc(100% + 6px)',
             left: 0,
             right: 0,
-            background: 'rgba(10,15,30,0.98)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: 10,
+            background: 'rgba(13,18,32,0.98)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: 14,
             overflow: 'hidden',
             zIndex: 50,
-            backdropFilter: 'blur(10px)',
+            backdropFilter: 'blur(16px)',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
           }}
         >
           {Array.from({ length: 11 }, (_, i) => (
@@ -468,20 +484,13 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                 setIsOpen(false)
               }}
               style={{
-                padding: '12px 16px',
+                padding: '13px 16px',
                 fontSize: 14,
                 fontFamily: 'Inter, sans-serif',
                 cursor: 'pointer',
-                color: value === i ? '#fff' : 'rgba(255,255,255,0.4)',
-                background: value === i ? `${color}25` : 'transparent',
-                borderBottom: i < 10 ? '1px solid rgba(255,255,255,0.04)' : 'none',
-                borderLeft: value === i ? `2px solid ${color}` : '2px solid transparent',
-              }}
-              onMouseEnter={e => {
-                if (value !== i) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'
-              }}
-              onMouseLeave={e => {
-                if (value !== i) e.currentTarget.style.background = 'transparent'
+                color: value === i ? '#fff' : 'rgba(255,255,255,0.72)',
+                background: value === i ? `${color}22` : 'transparent',
+                borderBottom: i < 10 ? '1px solid rgba(255,255,255,0.05)' : 'none',
               }}
             >
               {i === 0 ? 'No tickets' : `${i} ticket${i !== 1 ? 's' : ''}`}
@@ -498,7 +507,8 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
     <main
       style={{
         minHeight: '100vh',
-        backgroundColor: '#0a0f1e',
+        background:
+          'linear-gradient(180deg, #09101d 0%, #0a0f1e 35%, #0b1120 100%)',
         padding: '0 0 80px',
         fontFamily: 'Inter, sans-serif',
         position: 'relative',
@@ -509,7 +519,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
           position: 'fixed',
           inset: 0,
           pointerEvents: 'none',
-          background: 'radial-gradient(circle at 50% 0%, rgba(46,117,182,0.08) 0%, transparent 55%)',
+          background: 'radial-gradient(circle at 50% 0%, rgba(46,117,182,0.09) 0%, transparent 55%)',
         }}
       />
 
@@ -518,70 +528,116 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
           position: 'sticky',
           top: 0,
           zIndex: 100,
-          background: 'rgba(10,15,30,0.95)',
+          background: 'rgba(10,15,30,0.92)',
           backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(46,117,182,0.12)',
-          padding: '0 24px',
-          height: 60,
+          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          padding: '0 20px',
+          height: 64,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
         }}
       >
-        <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
           <div
             style={{
-              width: 30,
-              height: 30,
-              borderRadius: 9,
+              width: 34,
+              height: 34,
+              borderRadius: 10,
               background: 'linear-gradient(135deg, #1A3C5E, #2E75B6)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: 13,
+              fontSize: 14,
+              boxShadow: '0 10px 24px rgba(46,117,182,0.28)',
             }}
           >
             🎟️
           </div>
-          <span style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 800, fontSize: 17, color: '#fff' }}>
-            Ticket<span style={{ color: '#2E75B6' }}>Hub</span>
+          <span style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 800, fontSize: 18, color: '#fff' }}>
+            Ticket<span style={{ color: '#60a5fa' }}>Hub</span>
           </span>
         </Link>
-        <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: 11, fontWeight: 700, letterSpacing: '2px' }}>
-          BOOK YOUR SPOT
+
+        <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, fontWeight: 700, letterSpacing: '1.8px' }}>
+          SECURE BOOKING
         </span>
       </div>
 
-      <div style={{ maxWidth: 580, margin: '0 auto', padding: '40px 20px 0', position: 'relative', zIndex: 1 }}>
-        {event && (
-          <div
+      <div style={{ maxWidth: 640, margin: '0 auto', padding: '32px 18px 0', position: 'relative', zIndex: 1 }}>
+        <div style={{ marginBottom: 24 }}>
+          <p style={{ color: '#60a5fa', fontSize: 12, fontWeight: 700, letterSpacing: '2px', margin: '0 0 8px' }}>
+            RESERVATION
+          </p>
+          <h1
             style={{
-              background: 'rgba(255,255,255,0.02)',
-              border: '1px solid rgba(46,117,182,0.15)',
-              borderRadius: 16,
-              padding: '20px 24px',
-              marginBottom: 24,
+              color: '#fff',
+              fontFamily: 'Poppins, sans-serif',
+              fontSize: 'clamp(28px, 6vw, 40px)',
+              lineHeight: 1.1,
+              margin: '0 0 10px',
+              letterSpacing: '-1px',
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
-              <div>
-                <p style={{ color: '#fff', fontSize: 17, fontWeight: 800, margin: '0 0 6px', fontFamily: 'Poppins, sans-serif' }}>
+            Book your spot clearly and confidently
+          </h1>
+          <p
+            style={{
+              color: 'rgba(255,255,255,0.68)',
+              fontSize: 15,
+              lineHeight: 1.75,
+              margin: 0,
+              maxWidth: 560,
+            }}
+          >
+            Choose your ticket type, add guest details, review your total, then submit your booking request.
+          </p>
+        </div>
+
+        {event && (
+          <div style={sectionStyle}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
+              <div style={{ flex: 1, minWidth: 220 }}>
+                <p
+                  style={{
+                    color: '#fff',
+                    fontSize: 20,
+                    fontWeight: 800,
+                    margin: '0 0 8px',
+                    fontFamily: 'Poppins, sans-serif',
+                    lineHeight: 1.3,
+                  }}
+                >
                   {event.title}
                 </p>
-                <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 12, margin: 0 }}>
-                  📅 {new Date(event.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' })} · 📍 {event.location}
+                <p style={{ color: 'rgba(255,255,255,0.66)', fontSize: 14, margin: '0 0 4px', lineHeight: 1.6 }}>
+                  {new Date(event.date).toLocaleDateString('en-US', {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric',
+                    timeZone: 'UTC',
+                  })}
+                </p>
+                <p style={{ color: 'rgba(255,255,255,0.66)', fontSize: 14, margin: 0, lineHeight: 1.6 }}>
+                  {event.location}
                 </p>
               </div>
 
-              <div style={{ textAlign: 'right', fontSize: 12 }}>
+              <div style={{ minWidth: 180 }}>
                 {hasStanding && !standing.soldOut && standing.price != null && (
-                  <div style={{ color: '#27AE60', marginBottom: 2 }}>Standing: {standing.price} EGP</div>
+                  <div style={{ color: '#4ade80', marginBottom: 6, fontSize: 13, fontWeight: 600 }}>
+                    Standing · {standing.price} EGP
+                  </div>
                 )}
                 {hasBackstage && !backstage.soldOut && backstage.price != null && (
-                  <div style={{ color: '#8b5cf6', marginBottom: 2 }}>Backstage: {backstage.price} EGP</div>
+                  <div style={{ color: '#a78bfa', marginBottom: 6, fontSize: 13, fontWeight: 600 }}>
+                    Backstage · {backstage.price} EGP
+                  </div>
                 )}
                 {hasVip && !vip.soldOut && vip.price != null && (
-                  <div style={{ color: '#F0A500' }}>VIP: {vip.price} EGP</div>
+                  <div style={{ color: '#fbbf24', fontSize: 13, fontWeight: 600 }}>
+                    VIP · {vip.price} EGP
+                  </div>
                 )}
               </div>
             </div>
@@ -591,342 +647,429 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
         {event && allSoldOut && (
           <div
             style={{
-              background: 'rgba(231,76,60,0.05)',
-              border: '1px solid rgba(231,76,60,0.25)',
-              borderRadius: 16,
-              padding: 28,
-              marginBottom: 24,
+              background: 'rgba(231,76,60,0.06)',
+              border: '1px solid rgba(231,76,60,0.22)',
+              borderRadius: 20,
+              padding: 24,
+              marginBottom: 16,
               textAlign: 'center',
             }}
           >
-            <p style={{ fontSize: 36, margin: '0 0 10px' }}>❌</p>
-            <p style={{ color: '#E74C3C', fontSize: 13, letterSpacing: '2px', fontWeight: 700, margin: 0 }}>
+            <p style={{ fontSize: 34, margin: '0 0 10px' }}>❌</p>
+            <p style={{ color: '#ff7b72', fontSize: 14, letterSpacing: '1.5px', fontWeight: 700, margin: '0 0 8px' }}>
               {event.is_finished ? 'THIS EVENT HAS ENDED' : 'ALL TICKETS ARE SOLD OUT'}
+            </p>
+            <p style={{ color: 'rgba(255,255,255,0.58)', fontSize: 14, margin: 0, lineHeight: 1.7 }}>
+              There are no available tickets for this event right now.
             </p>
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
+        {successMsg ? (
           <div
             style={{
-              background: 'rgba(255,255,255,0.02)',
-              border: '1px solid rgba(255,255,255,0.06)',
-              borderRadius: 16,
-              padding: '24px',
-              marginBottom: 14,
+              background: 'linear-gradient(180deg, rgba(39,174,96,0.10), rgba(39,174,96,0.04))',
+              border: '1px solid rgba(39,174,96,0.28)',
+              borderRadius: 22,
+              padding: 28,
+              boxShadow: '0 16px 40px rgba(0,0,0,0.22)',
             }}
           >
-            <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 10, letterSpacing: '2.5px', fontWeight: 700, margin: '0 0 18px' }}>
-              STEP 1 · SELECT TICKETS
+            <div
+              style={{
+                width: 58,
+                height: 58,
+                borderRadius: '50%',
+                background: 'rgba(39,174,96,0.16)',
+                border: '1px solid rgba(39,174,96,0.28)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 24,
+                marginBottom: 16,
+              }}
+            >
+              ✅
+            </div>
+
+            <h2
+              style={{
+                color: '#fff',
+                fontFamily: 'Poppins, sans-serif',
+                fontSize: 24,
+                margin: '0 0 10px',
+                lineHeight: 1.25,
+              }}
+            >
+              Booking submitted successfully
+            </h2>
+
+            <p style={{ color: 'rgba(255,255,255,0.78)', fontSize: 15, lineHeight: 1.8, margin: '0 0 14px' }}>
+              {successMsg}
             </p>
 
             <div
               style={{
-                display: 'grid',
-                gridTemplateColumns: `repeat(${Math.max(ticketColumns, 1)}, 1fr)`,
-                gap: 12,
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: 16,
+                padding: '14px 16px',
               }}
             >
-              {hasStanding && (
-                <div>
-                  <label style={{ ...labelStyle, color: '#27AE60' }}>
-                    STANDING{standing.soldOut ? ' — SOLD OUT' : ` — ${standing.price} EGP`}
-                  </label>
-                  <TicketDropdown
-                    value={standingCount}
-                    disabled={allStandingUnavailable}
-                    isOpen={standingOpen}
-                    color="#27AE60"
-                    setIsOpen={v => {
-                      setStandingOpen(v)
-                      if (v) {
-                        setBackstageOpen(false)
-                        setVipOpen(false)
-                      }
-                    }}
-                    onChange={n => handleNumChange('standing', n)}
-                  />
-                </div>
-              )}
-
-              {hasBackstage && (
-                <div>
-                  <label style={{ ...labelStyle, color: '#8b5cf6' }}>
-                    BACKSTAGE{backstage.soldOut ? ' — SOLD OUT' : ` — ${backstage.price} EGP`}
-                  </label>
-                  <TicketDropdown
-                    value={backstageCount}
-                    disabled={allBackstageUnavailable}
-                    isOpen={backstageOpen}
-                    color="#8b5cf6"
-                    setIsOpen={v => {
-                      setBackstageOpen(v)
-                      if (v) {
-                        setStandingOpen(false)
-                        setVipOpen(false)
-                      }
-                    }}
-                    onChange={n => handleNumChange('backstage', n)}
-                  />
-                </div>
-              )}
-
-              {hasVip && (
-                <div>
-                  <label style={{ ...labelStyle, color: '#F0A500' }}>
-                    VIP{vip.soldOut ? ' — SOLD OUT' : ` — ${vip.price} EGP`}
-                  </label>
-                  <TicketDropdown
-                    value={vipCount}
-                    disabled={allVipUnavailable}
-                    isOpen={vipOpen}
-                    color="#F0A500"
-                    setIsOpen={v => {
-                      setVipOpen(v)
-                      if (v) {
-                        setStandingOpen(false)
-                        setBackstageOpen(false)
-                      }
-                    }}
-                    onChange={n => handleNumChange('vip', n)}
-                  />
-                </div>
-              )}
+              <p style={{ color: '#86efac', fontSize: 13, fontWeight: 700, margin: '0 0 6px', letterSpacing: '1px' }}>
+                NEXT STEP
+              </p>
+              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, margin: 0, lineHeight: 1.7 }}>
+                You are being redirected to your profile now.
+                {redirecting ? ' Please wait a moment...' : ''}
+              </p>
             </div>
-
-            <p style={{ color: 'rgba(255,255,255,0.15)', fontSize: 11, marginTop: 12 }}>
-              Choose how many tickets you need. Guest details will appear in the next step.
-            </p>
           </div>
+        ) : (
+          <form onSubmit={handleSubmit}>
+            <div style={sectionStyle}>
+              <p style={{ color: '#93c5fd', fontSize: 12, letterSpacing: '2px', fontWeight: 700, margin: '0 0 18px' }}>
+                STEP 1 · SELECT TICKETS
+              </p>
 
-          {totalPeople > 0 && (
-            <>
               <div
                 style={{
-                  background: 'rgba(255,255,255,0.02)',
-                  border: '1px solid rgba(255,255,255,0.06)',
-                  borderRadius: 16,
-                  padding: 24,
-                  marginBottom: 14,
+                  display: 'grid',
+                  gridTemplateColumns: ticketColumns > 1 ? `repeat(${ticketColumns}, 1fr)` : '1fr',
+                  gap: 14,
                 }}
               >
-                <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 10, letterSpacing: '2.5px', fontWeight: 700, margin: '0 0 6px' }}>
-                  STEP 2 · MAIN GUEST
-                </p>
-
-                {mainTicketType && (
+                {hasStanding && (
                   <div
                     style={{
-                      display: 'inline-block',
-                      marginBottom: 16,
-                      background: `${ticketTypeStyle[mainTicketType].color}15`,
-                      border: `1px solid ${ticketTypeStyle[mainTicketType].color}30`,
-                      borderRadius: 50,
-                      padding: '4px 14px',
+                      background: 'rgba(255,255,255,0.025)',
+                      border: '1px solid rgba(39,174,96,0.16)',
+                      borderRadius: 18,
+                      padding: 16,
                     }}
                   >
-                    <span style={{ color: ticketTypeStyle[mainTicketType].color, fontSize: 11, fontWeight: 700 }}>
-                      {ticketTypeStyle[mainTicketType].label}
-                    </span>
+                    <label style={{ ...labelStyle, color: '#4ade80', marginBottom: 10 }}>
+                      STANDING{standing.soldOut ? ' — SOLD OUT' : ` — ${standing.price} EGP`}
+                    </label>
+                    <p style={{ color: 'rgba(255,255,255,0.52)', fontSize: 13, lineHeight: 1.6, margin: '0 0 12px' }}>
+                      Standard event access.
+                    </p>
+                    <TicketDropdown
+                      value={standingCount}
+                      disabled={allStandingUnavailable}
+                      isOpen={standingOpen}
+                      color="#27AE60"
+                      setIsOpen={v => {
+                        setStandingOpen(v)
+                        if (v) {
+                          setBackstageOpen(false)
+                          setVipOpen(false)
+                        }
+                      }}
+                      onChange={n => handleNumChange('standing', n)}
+                    />
                   </div>
                 )}
 
-                <div style={{ marginBottom: 14 }}>
-                  <label style={labelStyle}>FULL NAME</label>
-                  <input style={inputStyle} placeholder="Your full name" value={name} onChange={e => setName(e.target.value)} />
-                </div>
-
-                <div style={{ marginBottom: 14 }}>
-                  <label style={labelStyle}>PHONE NUMBER</label>
-                  <input style={inputStyle} placeholder="01XXXXXXXXX" type="tel" value={phone} onChange={e => setPhone(e.target.value)} />
-                </div>
-
-                <div style={{ marginBottom: 14 }}>
-                  <label style={labelStyle}>EMAIL</label>
-                  <input style={inputStyle} placeholder="your@email.com" type="email" value={email} onChange={e => setEmail(e.target.value)} />
-                </div>
-
-                <div>
-                  <label style={labelStyle}>INSTAGRAM URL</label>
-                  <input style={inputStyle} type="url" placeholder="https://instagram.com/username" value={instagram} onChange={e => setInstagram(e.target.value)} />
-                </div>
-              </div>
-
-              {people.map((p, i) => (
-                <div
-                  key={i}
-                  style={{
-                    background: 'rgba(255,255,255,0.02)',
-                    border: `1px solid ${ticketTypeStyle[p.ticket_type]?.color}20`,
-                    borderRadius: 16,
-                    padding: 24,
-                    marginBottom: 14,
-                  }}
-                >
-                  <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 10, letterSpacing: '2.5px', fontWeight: 700, margin: '0 0 6px' }}>
-                    GUEST {i + 2}
-                  </p>
-
+                {hasBackstage && (
                   <div
                     style={{
-                      display: 'inline-block',
-                      marginBottom: 16,
-                      background: `${ticketTypeStyle[p.ticket_type]?.color}15`,
-                      border: `1px solid ${ticketTypeStyle[p.ticket_type]?.color}30`,
-                      borderRadius: 50,
-                      padding: '4px 14px',
+                      background: 'rgba(255,255,255,0.025)',
+                      border: '1px solid rgba(139,92,246,0.16)',
+                      borderRadius: 18,
+                      padding: 16,
                     }}
                   >
-                    <span style={{ color: ticketTypeStyle[p.ticket_type]?.color, fontSize: 11, fontWeight: 700 }}>
-                      {ticketTypeStyle[p.ticket_type]?.label}
-                    </span>
+                    <label style={{ ...labelStyle, color: '#a78bfa', marginBottom: 10 }}>
+                      BACKSTAGE{backstage.soldOut ? ' — SOLD OUT' : ` — ${backstage.price} EGP`}
+                    </label>
+                    <p style={{ color: 'rgba(255,255,255,0.52)', fontSize: 13, lineHeight: 1.6, margin: '0 0 12px' }}>
+                      Extended access and premium area entry.
+                    </p>
+                    <TicketDropdown
+                      value={backstageCount}
+                      disabled={allBackstageUnavailable}
+                      isOpen={backstageOpen}
+                      color="#8b5cf6"
+                      setIsOpen={v => {
+                        setBackstageOpen(v)
+                        if (v) {
+                          setStandingOpen(false)
+                          setVipOpen(false)
+                        }
+                      }}
+                      onChange={n => handleNumChange('backstage', n)}
+                    />
                   </div>
+                )}
+
+                {hasVip && (
+                  <div
+                    style={{
+                      background: 'rgba(255,255,255,0.025)',
+                      border: '1px solid rgba(240,165,0,0.16)',
+                      borderRadius: 18,
+                      padding: 16,
+                    }}
+                  >
+                    <label style={{ ...labelStyle, color: '#fbbf24', marginBottom: 10 }}>
+                      VIP{vip.soldOut ? ' — SOLD OUT' : ` — ${vip.price} EGP`}
+                    </label>
+                    <p style={{ color: 'rgba(255,255,255,0.52)', fontSize: 13, lineHeight: 1.6, margin: '0 0 12px' }}>
+                      Priority access and premium booking tier.
+                    </p>
+                    <TicketDropdown
+                      value={vipCount}
+                      disabled={allVipUnavailable}
+                      isOpen={vipOpen}
+                      color="#F0A500"
+                      setIsOpen={v => {
+                        setVipOpen(v)
+                        if (v) {
+                          setStandingOpen(false)
+                          setBackstageOpen(false)
+                        }
+                      }}
+                      onChange={n => handleNumChange('vip', n)}
+                    />
+                  </div>
+                )}
+              </div>
+
+              <p style={{ color: 'rgba(255,255,255,0.48)', fontSize: 13, marginTop: 14, lineHeight: 1.7 }}>
+                Select the number of tickets you need. Guest fields will appear automatically after selection.
+              </p>
+            </div>
+
+            {totalPeople > 0 && (
+              <>
+                <div style={sectionStyle}>
+                  <p style={{ color: '#93c5fd', fontSize: 12, letterSpacing: '2px', fontWeight: 700, margin: '0 0 8px' }}>
+                    STEP 2 · MAIN GUEST
+                  </p>
+
+                  <p style={{ color: 'rgba(255,255,255,0.58)', fontSize: 14, lineHeight: 1.75, margin: '0 0 16px' }}>
+                    Enter the primary guest details exactly as they should appear on the booking.
+                  </p>
+
+                  {mainTicketType && (
+                    <div
+                      style={{
+                        display: 'inline-block',
+                        marginBottom: 18,
+                        background: `${ticketTypeStyle[mainTicketType].color}14`,
+                        border: `1px solid ${ticketTypeStyle[mainTicketType].color}28`,
+                        borderRadius: 999,
+                        padding: '6px 14px',
+                      }}
+                    >
+                      <span style={{ color: ticketTypeStyle[mainTicketType].color, fontSize: 12, fontWeight: 700 }}>
+                        {ticketTypeStyle[mainTicketType].label}
+                      </span>
+                    </div>
+                  )}
 
                   <div style={{ marginBottom: 14 }}>
                     <label style={labelStyle}>FULL NAME</label>
-                    <input style={inputStyle} placeholder="Full name" value={p.name} onChange={e => updatePerson(i, 'name', e.target.value)} />
+                    <input style={inputStyle} placeholder="Your full name" value={name} onChange={e => setName(e.target.value)} />
                   </div>
 
                   <div style={{ marginBottom: 14 }}>
                     <label style={labelStyle}>PHONE NUMBER</label>
-                    <input style={inputStyle} placeholder="01XXXXXXXXX" type="tel" value={p.phone} onChange={e => updatePerson(i, 'phone', e.target.value)} />
+                    <input style={inputStyle} placeholder="01XXXXXXXXX" type="tel" value={phone} onChange={e => setPhone(e.target.value)} />
+                  </div>
+
+                  <div style={{ marginBottom: 14 }}>
+                    <label style={labelStyle}>EMAIL ADDRESS</label>
+                    <input style={inputStyle} placeholder="your@email.com" type="email" value={email} onChange={e => setEmail(e.target.value)} />
                   </div>
 
                   <div>
                     <label style={labelStyle}>INSTAGRAM URL</label>
-                    <input style={inputStyle} type="url" placeholder="https://instagram.com/username" value={p.instagram} onChange={e => updatePerson(i, 'instagram', e.target.value)} />
+                    <input
+                      style={inputStyle}
+                      type="url"
+                      placeholder="https://instagram.com/username"
+                      value={instagram}
+                      onChange={e => setInstagram(e.target.value)}
+                    />
                   </div>
                 </div>
-              ))}
-            </>
-          )}
 
-          {!allSoldOut && event && totalPeople > 0 && (
-            <div
-              style={{
-                background: 'rgba(255,255,255,0.02)',
-                border: '1px solid rgba(255,255,255,0.06)',
-                borderRadius: 14,
-                padding: '20px 24px',
-                marginBottom: 18,
-              }}
-            >
-              {standingCount > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <span style={{ color: '#27AE60', fontSize: 12 }}>Standing ({standingCount}x)</span>
-                  <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>{(standing.price ?? 0) * standingCount} EGP</span>
+                {people.map((p, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      ...sectionStyle,
+                      border: `1px solid ${ticketTypeStyle[p.ticket_type].color}18`,
+                    }}
+                  >
+                    <p style={{ color: '#93c5fd', fontSize: 12, letterSpacing: '2px', fontWeight: 700, margin: '0 0 8px' }}>
+                      GUEST {i + 2}
+                    </p>
+
+                    <div
+                      style={{
+                        display: 'inline-block',
+                        marginBottom: 18,
+                        background: `${ticketTypeStyle[p.ticket_type].color}14`,
+                        border: `1px solid ${ticketTypeStyle[p.ticket_type].color}28`,
+                        borderRadius: 999,
+                        padding: '6px 14px',
+                      }}
+                    >
+                      <span style={{ color: ticketTypeStyle[p.ticket_type].color, fontSize: 12, fontWeight: 700 }}>
+                        {ticketTypeStyle[p.ticket_type].label}
+                      </span>
+                    </div>
+
+                    <div style={{ marginBottom: 14 }}>
+                      <label style={labelStyle}>FULL NAME</label>
+                      <input style={inputStyle} placeholder="Guest full name" value={p.name} onChange={e => updatePerson(i, 'name', e.target.value)} />
+                    </div>
+
+                    <div style={{ marginBottom: 14 }}>
+                      <label style={labelStyle}>PHONE NUMBER</label>
+                      <input style={inputStyle} placeholder="01XXXXXXXXX" type="tel" value={p.phone} onChange={e => updatePerson(i, 'phone', e.target.value)} />
+                    </div>
+
+                    <div>
+                      <label style={labelStyle}>INSTAGRAM URL</label>
+                      <input
+                        style={inputStyle}
+                        type="url"
+                        placeholder="https://instagram.com/username"
+                        value={p.instagram}
+                        onChange={e => updatePerson(i, 'instagram', e.target.value)}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
+
+            {!allSoldOut && event && totalPeople > 0 && (
+              <div style={sectionStyle}>
+                <p style={{ color: '#93c5fd', fontSize: 12, letterSpacing: '2px', fontWeight: 700, margin: '0 0 16px' }}>
+                  BOOKING SUMMARY
+                </p>
+
+                {standingCount > 0 && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, marginBottom: 8 }}>
+                    <span style={{ color: '#4ade80', fontSize: 14 }}>Standing ({standingCount}x)</span>
+                    <span style={{ color: 'rgba(255,255,255,0.78)', fontSize: 14 }}>{(standing.price ?? 0) * standingCount} EGP</span>
+                  </div>
+                )}
+
+                {backstageCount > 0 && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, marginBottom: 8 }}>
+                    <span style={{ color: '#a78bfa', fontSize: 14 }}>Backstage ({backstageCount}x)</span>
+                    <span style={{ color: 'rgba(255,255,255,0.78)', fontSize: 14 }}>{(backstage.price ?? 0) * backstageCount} EGP</span>
+                  </div>
+                )}
+
+                {vipCount > 0 && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, marginBottom: 8 }}>
+                    <span style={{ color: '#fbbf24', fontSize: 14 }}>VIP ({vipCount}x)</span>
+                    <span style={{ color: 'rgba(255,255,255,0.78)', fontSize: 14 }}>{(vip.price ?? 0) * vipCount} EGP</span>
+                  </div>
+                )}
+
+                <div style={{ height: 1, background: 'rgba(255,255,255,0.08)', margin: '14px 0' }} />
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <span style={{ color: 'rgba(255,255,255,0.56)', fontSize: 14 }}>Subtotal</span>
+                  <span style={{ color: 'rgba(255,255,255,0.78)', fontSize: 14 }}>{getSubtotal()} EGP</span>
                 </div>
-              )}
 
-              {backstageCount > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <span style={{ color: '#8b5cf6', fontSize: 12 }}>Backstage ({backstageCount}x)</span>
-                  <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>{(backstage.price ?? 0) * backstageCount} EGP</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+                  <span style={{ color: 'rgba(255,255,255,0.56)', fontSize: 14 }}>Tax (8%)</span>
+                  <span style={{ color: 'rgba(255,255,255,0.78)', fontSize: 14 }}>{getTax()} EGP</span>
                 </div>
-              )}
 
-              {vipCount > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <span style={{ color: '#F0A500', fontSize: 12 }}>VIP ({vipCount}x)</span>
-                  <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>{(vip.price ?? 0) * vipCount} EGP</span>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: 16,
+                    padding: '14px 16px',
+                  }}
+                >
+                  <span style={{ color: '#fff', fontSize: 13, letterSpacing: '1.5px', fontWeight: 700 }}>TOTAL</span>
+                  <span style={{ color: '#60a5fa', fontSize: 26, fontWeight: 900, fontFamily: 'Poppins, sans-serif' }}>
+                    {getTotal()} EGP
+                  </span>
                 </div>
-              )}
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 10 }}>
-                <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 12 }}>SUBTOTAL</span>
-                <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>{getSubtotal()} EGP</span>
               </div>
+            )}
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-                <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 12 }}>TAX (8%)</span>
-                <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>{getTax()} EGP</span>
-              </div>
-
+            {error && (
               <div
                 style={{
-                  borderTop: '1px solid rgba(255,255,255,0.06)',
-                  marginTop: 12,
-                  paddingTop: 12,
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
+                  background: 'rgba(231,76,60,0.08)',
+                  border: '1px solid rgba(231,76,60,0.22)',
+                  borderRadius: 16,
+                  padding: '14px 16px',
+                  color: '#ff7b72',
+                  fontSize: 14,
+                  marginBottom: 14,
+                  lineHeight: 1.7,
                 }}
               >
-                <span style={{ color: '#fff', fontSize: 13, letterSpacing: '2px', fontWeight: 700 }}>TOTAL</span>
-                <span style={{ color: '#2E75B6', fontSize: 24, fontWeight: 900, fontFamily: 'Poppins, sans-serif' }}>
-                  {getTotal()} EGP
-                </span>
+                ⚠ {error}
               </div>
-            </div>
-          )}
+            )}
 
-          {error && (
-            <div
+            <button
+              type="submit"
+              disabled={loading || allSoldOut || getSubtotal() <= 0 || totalPeople === 0}
               style={{
-                background: 'rgba(231,76,60,0.08)',
-                border: '1px solid rgba(231,76,60,0.25)',
-                borderRadius: 10,
-                padding: '12px 16px',
-                color: '#E74C3C',
-                fontSize: 13,
-                marginBottom: 14,
+                width: '100%',
+                background:
+                  loading || allSoldOut || getSubtotal() <= 0 || totalPeople === 0
+                    ? 'rgba(255,255,255,0.05)'
+                    : 'linear-gradient(135deg, #1A3C5E, #2E75B6)',
+                color:
+                  loading || allSoldOut || getSubtotal() <= 0 || totalPeople === 0
+                    ? 'rgba(255,255,255,0.28)'
+                    : '#fff',
+                border: 'none',
+                padding: '18px',
+                borderRadius: 16,
+                fontWeight: 800,
+                fontSize: 15,
+                letterSpacing: '1.6px',
+                cursor:
+                  loading || allSoldOut || getSubtotal() <= 0 || totalPeople === 0
+                    ? 'not-allowed'
+                    : 'pointer',
+                fontFamily: 'Poppins, sans-serif',
+                boxShadow:
+                  loading || allSoldOut || getSubtotal() <= 0 || totalPeople === 0
+                    ? 'none'
+                    : '0 12px 30px rgba(46,117,182,0.28)',
               }}
             >
-              ⚠ {error}
-            </div>
-          )}
+              {loading ? 'Submitting booking...' : allSoldOut || totalPeople === 0 ? 'UNAVAILABLE' : 'Submit Booking →'}
+            </button>
 
-          {successMsg && (
-            <div
+            <p
               style={{
-                background: 'rgba(39,174,96,0.08)',
-                border: '1px solid rgba(39,174,96,0.25)',
-                borderRadius: 10,
-                padding: '14px 16px',
-                color: '#27AE60',
+                color: 'rgba(255,255,255,0.48)',
                 fontSize: 13,
-                marginBottom: 14,
-                lineHeight: 1.7,
+                textAlign: 'center',
+                marginTop: 16,
+                lineHeight: 1.75,
+                padding: '0 8px',
               }}
             >
-              ✅ {successMsg}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading || allSoldOut || getSubtotal() <= 0 || totalPeople === 0}
-            style={{
-              width: '100%',
-              background:
-                loading || allSoldOut || getSubtotal() <= 0 || totalPeople === 0
-                  ? 'rgba(255,255,255,0.04)'
-                  : 'linear-gradient(135deg, #1A3C5E, #2E75B6)',
-              color:
-                loading || allSoldOut || getSubtotal() <= 0 || totalPeople === 0
-                  ? 'rgba(255,255,255,0.2)'
-                  : '#fff',
-              border: 'none',
-              padding: '17px',
-              borderRadius: 12,
-              fontWeight: 800,
-              fontSize: 15,
-              letterSpacing: '2px',
-              cursor:
-                loading || allSoldOut || getSubtotal() <= 0 || totalPeople === 0
-                  ? 'not-allowed'
-                  : 'pointer',
-              fontFamily: 'Poppins, sans-serif',
-              boxShadow: loading || allSoldOut ? 'none' : '0 8px 24px rgba(46,117,182,0.3)',
-            }}
-          >
-            {loading ? 'Submitting...' : allSoldOut || totalPeople === 0 ? 'UNAVAILABLE' : 'Submit Booking →'}
-          </button>
-
-          <p style={{ color: 'rgba(255,255,255,0.15)', fontSize: 12, textAlign: 'center', marginTop: 16, lineHeight: 1.7 }}>
-            After submitting, you will be redirected to your profile to follow the booking steps, complete payment, and receive your QR ticket after confirmation.
-          </p>
-        </form>
+              After submission, you will be redirected to your profile to continue the booking steps and complete payment.
+            </p>
+          </form>
+        )}
       </div>
     </main>
   )
