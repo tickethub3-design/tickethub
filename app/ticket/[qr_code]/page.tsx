@@ -7,6 +7,7 @@ import QRCode from 'qrcode'
 import { useParams } from 'next/navigation'
 
 const typeConfig: Record<string, { color: string; bg: string; border: string; label: string; accent: string }> = {
+  guest: { color: '#db2777', bg: '#fdf2f8', border: '#fbcfe8', label: 'GUEST LIST', accent: '#ec4899' },
   single: { color: '#2563eb', bg: '#eff6ff', border: '#bfdbfe', label: 'SINGLE', accent: '#3b82f6' },
   standing: { color: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0', label: 'STANDING', accent: '#22c55e' },
   backstage: { color: '#7c3aed', bg: '#faf5ff', border: '#e9d5ff', label: 'BACKSTAGE', accent: '#a855f7' },
@@ -20,6 +21,8 @@ export default function TicketPage() {
   const [ticket, setTicket] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [qrUrl, setQrUrl] = useState('')
+  const [ticketUrl, setTicketUrl] = useState('')
+  const [copied, setCopied] = useState(false)
   const ticketRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -38,8 +41,10 @@ export default function TicketPage() {
       setLoading(false)
 
       if (data?.qr_code && typeof window !== 'undefined') {
-        const ticketUrl = `${window.location.origin}/ticket/${data.qr_code}`
-        const url = await QRCode.toDataURL(ticketUrl, {
+        const urlToTicket = `${window.location.origin}/ticket/${data.qr_code}`
+        setTicketUrl(urlToTicket)
+
+        const url = await QRCode.toDataURL(urlToTicket, {
           width: 200,
           margin: 1,
           color: { dark: '#1e293b', light: '#ffffff' },
@@ -78,7 +83,16 @@ export default function TicketPage() {
     })
 
     pdf.addImage(imgData, 'PNG', 0, 0, canvas.width / 3, canvas.height / 3)
-    pdf.save(`ticket-${ticket?.holder_name?.replace(/\s+/g, '-')}-#${ticket?.ticket_number}.pdf`)
+    pdf.save(`ticket-${ticket?.holder_name?.replace(/\s+/g, '-') || 'guest'}-#${ticket?.ticket_number || '00'}.pdf`)
+  }
+
+  const handleCopyLink = async () => {
+    if (!ticketUrl) return
+    try {
+      await navigator.clipboard.writeText(ticketUrl)
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 2000)
+    } catch {}
   }
 
   if (loading)
@@ -123,11 +137,12 @@ export default function TicketPage() {
     )
 
   const tc = typeConfig[ticket.ticket_type] || typeConfig.single
+  const isGuestTicket = ticket.ticket_type === 'guest'
   const eventImage = ticket.events?.image_url
-  const totalAmount = ticket.reservations?.total || ticket.reservations?.total_price || 0
-  const instagram = ticket.holder_instagram || ticket.reservations?.instagram
-  const phone = ticket.holder_phone || ticket.reservations?.phone || '—'
-  const holderName = ticket.holder_name || ticket.reservations?.full_name || ticket.reservations?.name || '—'
+  const totalAmount = isGuestTicket ? 0 : ticket.reservations?.total || ticket.reservations?.total_price || ticket.price_paid || 0
+  const instagram = ticket.holder_instagram || ticket.reservations?.instagram || ticket.instagram
+  const phone = ticket.holder_phone || ticket.reservations?.phone || ticket.phone || '—'
+  const holderName = ticket.holder_name || ticket.reservations?.full_name || ticket.reservations?.name || ticket.full_name || '—'
   const eventDate = ticket.events?.date
     ? new Date(ticket.events.date).toLocaleDateString('en-US', {
         weekday: 'short',
@@ -273,7 +288,7 @@ export default function TicketPage() {
                 }}
               >
                 <span style={{ color: tc.color, fontFamily: 'Poppins, sans-serif', fontWeight: 900, fontSize: 13 }}>
-                  #{String(ticket.ticket_number).padStart(2, '0')}
+                  #{String(ticket.ticket_number || 0).padStart(2, '0')}
                 </span>
               </div>
               <p style={{ color: '#94a3b8', fontSize: 9, letterSpacing: '2px', fontWeight: 700, margin: 0 }}>TICKET NO.</p>
@@ -312,7 +327,9 @@ export default function TicketPage() {
           </div>
 
           <div style={{ marginBottom: 16 }}>
-            <p style={{ color: '#94a3b8', fontSize: 9, letterSpacing: '2px', fontWeight: 700, margin: '0 0 4px' }}>TICKET HOLDER</p>
+            <p style={{ color: '#94a3b8', fontSize: 9, letterSpacing: '2px', fontWeight: 700, margin: '0 0 4px' }}>
+              {isGuestTicket ? 'GUEST NAME' : 'TICKET HOLDER'}
+            </p>
             <p
               style={{
                 color: '#0f172a',
@@ -332,10 +349,10 @@ export default function TicketPage() {
             {[
               { label: 'PHONE', value: phone },
               { label: 'TYPE', value: tc.label, color: tc.color },
-              { label: 'AMOUNT', value: `${totalAmount} EGP` },
+              { label: isGuestTicket ? 'ACCESS' : 'AMOUNT', value: isGuestTicket ? 'FREE ACCESS' : `${totalAmount} EGP` },
               {
                 label: 'CHECK-IN',
-                value: ticket.checked_in
+                value: ticket.checked_in && ticket.checked_in_at
                   ? new Date(ticket.checked_in_at).toLocaleTimeString('en-US', {
                       hour: '2-digit',
                       minute: '2-digit',
@@ -446,6 +463,59 @@ export default function TicketPage() {
           </div>
         </div>
       </div>
+
+      {ticketUrl && (
+        <div
+          style={{
+            width: '100%',
+            maxWidth: 780,
+            marginTop: 18,
+            background: 'rgba(255,255,255,0.08)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            borderRadius: 16,
+            padding: '14px 16px',
+          }}
+        >
+          <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 11, fontWeight: 700, letterSpacing: '2px', margin: '0 0 8px' }}>
+            SHARE TICKET LINK
+          </p>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+            <div
+              style={{
+                flex: 1,
+                minWidth: 240,
+                background: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: 10,
+                padding: '11px 12px',
+                color: '#fff',
+                fontSize: 12,
+                wordBreak: 'break-all',
+              }}
+            >
+              {ticketUrl}
+            </div>
+
+            <button
+              onClick={handleCopyLink}
+              style={{
+                background: copied ? 'rgba(34,197,94,0.18)' : 'linear-gradient(135deg, #1A3C5E, #2E75B6)',
+                color: '#fff',
+                border: 'none',
+                padding: '12px 16px',
+                borderRadius: 10,
+                fontWeight: 700,
+                fontSize: 12,
+                letterSpacing: '1px',
+                cursor: 'pointer',
+                fontFamily: 'Poppins, sans-serif',
+              }}
+            >
+              {copied ? 'Copied ✓' : 'Copy Link'}
+            </button>
+          </div>
+        </div>
+      )}
 
       <div style={{ display: 'flex', gap: 12, marginTop: 28, flexWrap: 'wrap', justifyContent: 'center' }}>
         <button

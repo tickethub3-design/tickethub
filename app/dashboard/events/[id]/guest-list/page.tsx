@@ -13,11 +13,12 @@ type GuestTicket = {
   holder_name?: string | null
   holder_phone?: string | null
   holder_instagram?: string | null
-  ticket_type: string
+  ticket_type: 'guest'
   price_paid: number | null
   status: string | null
   payment_status: string | null
   qr_code: string | null
+  checked_in?: boolean | null
   is_guest_list?: boolean | null
   created_at?: string | null
 }
@@ -53,6 +54,7 @@ export default function GuestListPage() {
   const [tickets, setTickets] = useState<GuestTicket[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [workingId, setWorkingId] = useState<string | null>(null)
   const [msg, setMsg] = useState('')
   const [error, setError] = useState('')
 
@@ -73,7 +75,7 @@ export default function GuestListPage() {
         supabase
           .from('tickets')
           .select(
-            'id,event_id,full_name,phone,instagram,holder_name,holder_phone,holder_instagram,ticket_type,price_paid,status,payment_status,qr_code,is_guest_list,created_at'
+            'id,event_id,full_name,phone,instagram,holder_name,holder_phone,holder_instagram,ticket_type,price_paid,status,payment_status,qr_code,checked_in,is_guest_list,created_at'
           )
           .eq('event_id', eventId)
           .eq('ticket_type', 'guest')
@@ -100,7 +102,10 @@ export default function GuestListPage() {
   }
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && localStorage.getItem('admin_auth') !== 'true') {
+    if (typeof window === 'undefined') return
+
+    const adminAuth = window.localStorage.getItem('admin_auth')
+    if (adminAuth !== 'true') {
       router.push('/dashboard/login')
       return
     }
@@ -174,11 +179,9 @@ export default function GuestListPage() {
           full_name: cleanName,
           phone: cleanPhone,
           instagram: cleanInstagram,
-
           holder_name: cleanName,
           holder_phone: cleanPhone,
           holder_instagram: cleanInstagram,
-
           ticket_type: 'guest',
           price_paid: 0,
           payment_status: 'free',
@@ -217,9 +220,12 @@ export default function GuestListPage() {
   }
 
   const handleDelete = async (id: string) => {
+    if (workingId) return
+
     const ok = window.confirm('Delete this guest ticket?')
     if (!ok) return
 
+    setWorkingId(id)
     setMsg('')
     setError('')
 
@@ -227,6 +233,7 @@ export default function GuestListPage() {
 
     if (deleteError) {
       setError(`Delete error: ${deleteError.message}`)
+      setWorkingId(null)
       return
     }
 
@@ -234,13 +241,17 @@ export default function GuestListPage() {
 
     setMsg('✅ Guest deleted successfully!')
     await load()
+    setWorkingId(null)
     window.setTimeout(() => setMsg(''), 3000)
   }
 
   const handleRegenerateQr = async (ticket: GuestTicket) => {
+    if (workingId) return
+
     const ok = window.confirm('Generate a new QR code for this guest? The old code will stop working.')
     if (!ok) return
 
+    setWorkingId(ticket.id)
     setMsg('')
     setError('')
 
@@ -254,11 +265,13 @@ export default function GuestListPage() {
 
     if (qrError) {
       setError(`QR update error: ${qrError.message}`)
+      setWorkingId(null)
       return
     }
 
     setMsg('✅ QR code regenerated successfully!')
     await load()
+    setWorkingId(null)
     window.setTimeout(() => setMsg(''), 3000)
   }
 
@@ -277,16 +290,17 @@ export default function GuestListPage() {
     boxSizing: 'border-box',
   }
 
-  const actionBtn = (color: string, bg: string): React.CSSProperties => ({
+  const actionBtn = (color: string, bg: string, disabled = false): React.CSSProperties => ({
     background: bg,
     border: `1px solid ${color}40`,
-    color,
+    color: disabled ? 'rgba(255,255,255,0.35)' : color,
     padding: '8px 12px',
     borderRadius: 8,
     fontSize: 12,
     fontWeight: 700,
-    cursor: 'pointer',
+    cursor: disabled ? 'not-allowed' : 'pointer',
     fontFamily: 'Inter, sans-serif',
+    opacity: disabled ? 0.65 : 1,
   })
 
   return (
@@ -552,48 +566,35 @@ export default function GuestListPage() {
               No guest tickets yet.
             </div>
           ) : (
-            tickets.map(ticket => (
-              <div
-                key={ticket.id}
-                style={{
-                  background: 'rgba(255,255,255,0.02)',
-                  border: '1px solid rgba(255,255,255,0.06)',
-                  borderRadius: 16,
-                  padding: 20,
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  gap: 16,
-                  alignItems: 'flex-start',
-                  flexWrap: 'wrap',
-                }}
-              >
-                <div style={{ flex: 1, minWidth: 240 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 8 }}>
-                    <h3 style={{ color: '#fff', fontSize: 16, fontWeight: 800, margin: 0, fontFamily: 'Poppins, sans-serif' }}>
-                      {ticket.holder_name || ticket.full_name}
-                    </h3>
+            tickets.map(ticket => {
+              const busy = workingId === ticket.id
 
-                    <span
-                      style={{
-                        background: 'rgba(96,165,250,0.08)',
-                        border: '1px solid rgba(96,165,250,0.24)',
-                        color: '#60a5fa',
-                        padding: '3px 10px',
-                        borderRadius: 999,
-                        fontSize: 10,
-                        fontWeight: 700,
-                        letterSpacing: '1px',
-                      }}
-                    >
-                      GUEST
-                    </span>
+              return (
+                <div
+                  key={ticket.id}
+                  style={{
+                    background: 'rgba(255,255,255,0.02)',
+                    border: '1px solid rgba(255,255,255,0.06)',
+                    borderRadius: 16,
+                    padding: 20,
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    gap: 16,
+                    alignItems: 'flex-start',
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <div style={{ flex: 1, minWidth: 240 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 8 }}>
+                      <h3 style={{ color: '#fff', fontSize: 16, fontWeight: 800, margin: 0, fontFamily: 'Poppins, sans-serif' }}>
+                        {ticket.holder_name || ticket.full_name}
+                      </h3>
 
-                    {ticket.payment_status && (
                       <span
                         style={{
-                          background: 'rgba(39,174,96,0.08)',
-                          border: '1px solid rgba(39,174,96,0.22)',
-                          color: '#86efac',
+                          background: 'rgba(96,165,250,0.08)',
+                          border: '1px solid rgba(96,165,250,0.24)',
+                          color: '#60a5fa',
                           padding: '3px 10px',
                           borderRadius: 999,
                           fontSize: 10,
@@ -601,52 +602,89 @@ export default function GuestListPage() {
                           letterSpacing: '1px',
                         }}
                       >
-                        {ticket.payment_status.toUpperCase()}
+                        GUEST
                       </span>
-                    )}
+
+                      {ticket.payment_status && (
+                        <span
+                          style={{
+                            background: 'rgba(39,174,96,0.08)',
+                            border: '1px solid rgba(39,174,96,0.22)',
+                            color: '#86efac',
+                            padding: '3px 10px',
+                            borderRadius: 999,
+                            fontSize: 10,
+                            fontWeight: 700,
+                            letterSpacing: '1px',
+                          }}
+                        >
+                          {ticket.payment_status.toUpperCase()}
+                        </span>
+                      )}
+
+                      {ticket.checked_in && (
+                        <span
+                          style={{
+                            background: 'rgba(240,165,0,0.08)',
+                            border: '1px solid rgba(240,165,0,0.22)',
+                            color: '#F0A500',
+                            padding: '3px 10px',
+                            borderRadius: 999,
+                            fontSize: 10,
+                            fontWeight: 700,
+                            letterSpacing: '1px',
+                          }}
+                        >
+                          CHECKED IN
+                        </span>
+                      )}
+                    </div>
+
+                    <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13, margin: '0 0 5px' }}>
+                      📞 {ticket.holder_phone || ticket.phone}
+                    </p>
+                    <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13, margin: '0 0 5px', wordBreak: 'break-word' }}>
+                      Instagram: {ticket.holder_instagram || ticket.instagram || '-'}
+                    </p>
+                    <p style={{ color: '#86efac', fontSize: 13, fontWeight: 700, margin: '0 0 5px' }}>
+                      Price: {ticket.price_paid ?? 0} EGP
+                    </p>
+                    <p style={{ color: '#60a5fa', fontSize: 12, fontWeight: 700, margin: '0 0 5px', wordBreak: 'break-all' }}>
+                      QR: {ticket.qr_code || '-'}
+                    </p>
+                    <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, margin: 0 }}>
+                      Status: {ticket.status || 'active'}
+                    </p>
                   </div>
 
-                  <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13, margin: '0 0 5px' }}>
-                    📞 {ticket.holder_phone || ticket.phone}
-                  </p>
-                  <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13, margin: '0 0 5px', wordBreak: 'break-word' }}>
-                    Instagram: {ticket.holder_instagram || ticket.instagram || '-'}
-                  </p>
-                  <p style={{ color: '#86efac', fontSize: 13, fontWeight: 700, margin: '0 0 5px' }}>
-                    Price: {ticket.price_paid ?? 0} EGP
-                  </p>
-                  <p style={{ color: '#60a5fa', fontSize: 12, fontWeight: 700, margin: '0 0 5px', wordBreak: 'break-all' }}>
-                    QR: {ticket.qr_code || '-'}
-                  </p>
-                  <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, margin: 0 }}>
-                    Status: {ticket.status || 'active'}
-                  </p>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <button
+                      onClick={() => handleEdit(ticket)}
+                      disabled={busy || saving}
+                      style={actionBtn('#2E75B6', 'rgba(46,117,182,0.08)', busy || saving)}
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      onClick={() => handleRegenerateQr(ticket)}
+                      disabled={busy || saving}
+                      style={actionBtn('#60a5fa', 'rgba(96,165,250,0.08)', busy || saving)}
+                    >
+                      {busy ? 'Working...' : 'New QR'}
+                    </button>
+
+                    <button
+                      onClick={() => handleDelete(ticket.id)}
+                      disabled={busy || saving}
+                      style={actionBtn('#E74C3C', 'rgba(231,76,60,0.08)', busy || saving)}
+                    >
+                      {busy ? 'Working...' : 'Delete'}
+                    </button>
+                  </div>
                 </div>
-
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  <button
-                    onClick={() => handleEdit(ticket)}
-                    style={actionBtn('#2E75B6', 'rgba(46,117,182,0.08)')}
-                  >
-                    Edit
-                  </button>
-
-                  <button
-                    onClick={() => handleRegenerateQr(ticket)}
-                    style={actionBtn('#60a5fa', 'rgba(96,165,250,0.08)')}
-                  >
-                    New QR
-                  </button>
-
-                  <button
-                    onClick={() => handleDelete(ticket.id)}
-                    style={actionBtn('#E74C3C', 'rgba(231,76,60,0.08)')}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))
+              )
+            })
           )}
         </div>
       </div>
