@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'TicketHub — Your Gateway to Live Experiences',
     description: 'Book Egypt\'s hottest concerts, VIP parties, and nightlife events. Secure payments and instant confirmation.',
-    url: 'https://tickethub.com',
+    url: 'https://tekthub.com',
     siteName: 'TicketHub',
     type: 'website',
     locale: 'en_US',

@@ -96,19 +96,21 @@ export default function HomePage() {
           justify-content: center;
           margin-bottom: 22px;
           flex-wrap: wrap;
-      .event-img-wrap {
-  position: relative;
-  width: 100%;
-  background: linear-gradient(135deg, #0d1528, #1A3C5E);
-  flex-shrink: 0;
-}
+        }
 
-.event-img-wrap img {
-  width: 100%;
-  height: auto;
-  display: block;
-  object-fit: unset;
-}
+        .event-img-wrap {
+          position: relative;
+          width: 100%;
+          background: linear-gradient(135deg, #0d1528, #1A3C5E);
+          flex-shrink: 0;
+        }
+
+        .event-img-wrap img {
+          width: 100%;
+          height: auto;
+          display: block;
+          object-fit: unset;
+        }
 
         @media (max-width: 768px) {
           .hero-title {
@@ -786,7 +788,6 @@ function EventCard({ event, isPast = false }: { event: Event; isPast?: boolean }
           display: 'flex',
           flexDirection: 'column',
           opacity: isPast ? 0.72 : 1,
-          minHeight: '100%',
         }}
         onMouseEnter={e => {
           const el = e.currentTarget as HTMLDivElement
@@ -811,7 +812,7 @@ function EventCard({ event, isPast = false }: { event: Event; isPast?: boolean }
               style={{ filter: isPast ? 'grayscale(65%) brightness(0.72)' : 'none' }}
             />
           ) : (
-            <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 52 }}>
+            <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 52 }}>
               🎵
             </div>
           )}
