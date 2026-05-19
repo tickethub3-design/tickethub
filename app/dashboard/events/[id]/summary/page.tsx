@@ -1,9 +1,10 @@
 'use client'
+
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter, useParams } from 'next/navigation'
 
-type TicketType = 'standing' | 'backstage' | 'vip'
+type TicketType = 'single' | 'standing' | 'backstage' | 'vip'
 
 type PeopleDetail = {
   name?: string
@@ -14,30 +15,46 @@ type PeopleDetail = {
 }
 
 type Counter = {
+  single: number
   standing: number
   backstage: number
   vip: number
+
+  single_wave_1: number
+  single_wave_2: number
+  single_wave_3: number
+
   standing_wave_1: number
   standing_wave_2: number
   standing_wave_3: number
+
   backstage_wave_1: number
   backstage_wave_2: number
   backstage_wave_3: number
+
   vip_wave_1: number
   vip_wave_2: number
   vip_wave_3: number
 }
 
 const EMPTY_COUNTS: Counter = {
+  single: 0,
   standing: 0,
   backstage: 0,
   vip: 0,
+
+  single_wave_1: 0,
+  single_wave_2: 0,
+  single_wave_3: 0,
+
   standing_wave_1: 0,
   standing_wave_2: 0,
   standing_wave_3: 0,
+
   backstage_wave_1: 0,
   backstage_wave_2: 0,
   backstage_wave_3: 0,
+
   vip_wave_1: 0,
   vip_wave_2: 0,
   vip_wave_3: 0,
@@ -46,6 +63,7 @@ const EMPTY_COUNTS: Counter = {
 export default function EventSummaryPage() {
   const router = useRouter()
   const params = useParams() as { id: string }
+
   const [loading, setLoading] = useState(true)
   const [eventData, setEventData] = useState<any>(null)
   const [reservations, setReservations] = useState<any[]>([])
@@ -53,10 +71,12 @@ export default function EventSummaryPage() {
 
   useEffect(() => {
     if (!params?.id) return
+
     if (typeof window !== 'undefined' && localStorage.getItem('admin_auth') !== 'true') {
       router.push('/dashboard/login')
       return
     }
+
     load()
   }, [params?.id])
 
@@ -64,6 +84,7 @@ export default function EventSummaryPage() {
     setLoading(true)
 
     const { data: ev } = await supabase.from('events').select('*').eq('id', params.id).single()
+
     const { data: res } = await supabase
       .from('reservations')
       .select('*')
@@ -112,6 +133,7 @@ export default function EventSummaryPage() {
 
   const ticketsSold = reservations.reduce((s, r) => s + (r.num_people || 0), 0)
   const totalRevenue = reservations.reduce((s, r) => s + (r.total_price || 0), 0)
+
   const TAX_RATE = 0.08
   const revenueBeforeTax = Math.round(totalRevenue / (1 + TAX_RATE))
   const taxAmount = totalRevenue - revenueBeforeTax
@@ -122,9 +144,15 @@ export default function EventSummaryPage() {
 
     const inc = (type: TicketType | undefined, wave: number | null | undefined) => {
       if (!type) return
+
+      if (type === 'single') acc.single += 1
       if (type === 'standing') acc.standing += 1
       if (type === 'backstage') acc.backstage += 1
       if (type === 'vip') acc.vip += 1
+
+      if (type === 'single' && wave === 1) acc.single_wave_1 += 1
+      if (type === 'single' && wave === 2) acc.single_wave_2 += 1
+      if (type === 'single' && wave === 3) acc.single_wave_3 += 1
 
       if (type === 'standing' && wave === 1) acc.standing_wave_1 += 1
       if (type === 'standing' && wave === 2) acc.standing_wave_2 += 1
@@ -174,7 +202,7 @@ export default function EventSummaryPage() {
         `Guest ${i} Phone`,
         `Guest ${i} Instagram`,
         `Guest ${i} Ticket Type`,
-        `Guest ${i} Wave`,
+        `Guest ${i} Wave`
       )
     }
 
@@ -214,7 +242,7 @@ export default function EventSummaryPage() {
             extras[i].phone || '',
             extras[i].instagram || '',
             extras[i].ticket_type || '',
-            extras[i].wave ?? '',
+            extras[i].wave ?? ''
           )
         } else {
           row.push('', '', '', '', '')
@@ -230,6 +258,7 @@ export default function EventSummaryPage() {
 
     const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
+
     const a = document.createElement('a')
     a.href = url
     a.download = `${(eventData.title || 'event').replace(/[^a-z0-9]+/gi, '_')}_Confirmed_${new Date()
@@ -246,7 +275,13 @@ export default function EventSummaryPage() {
     Array.isArray(r.people_details) ? r.people_details : []
 
   const typeColor = (t?: string) =>
-    t === 'backstage' ? '#8b5cf6' : t === 'vip' ? '#F0A500' : '#27AE60'
+    t === 'single'
+      ? '#60a5fa'
+      : t === 'backstage'
+      ? '#8b5cf6'
+      : t === 'vip'
+      ? '#F0A500'
+      : '#27AE60'
 
   return (
     <main
@@ -257,7 +292,6 @@ export default function EventSummaryPage() {
         fontFamily: 'Inter, sans-serif',
       }}
     >
-      {/* TOPBAR */}
       <div
         style={{
           position: 'fixed',
@@ -337,7 +371,6 @@ export default function EventSummaryPage() {
       </div>
 
       <div style={{ maxWidth: 980, margin: '0 auto', padding: '88px 24px 80px' }}>
-        {/* Header */}
         <div style={{ marginBottom: 36 }}>
           <span style={{ color: '#2E75B6', fontSize: 11, fontWeight: 700, letterSpacing: '2.5px' }}>
             EVENT SUMMARY
@@ -375,7 +408,6 @@ export default function EventSummaryPage() {
           )}
         </div>
 
-        {/* Stats Grid */}
         <div
           style={{
             display: 'grid',
@@ -396,6 +428,12 @@ export default function EventSummaryPage() {
               value: ticketsSold,
               color: '#fff',
               border: 'rgba(255,255,255,0.06)',
+            },
+            {
+              label: 'SINGLE',
+              value: counts.single,
+              color: '#60a5fa',
+              border: 'rgba(96,165,250,0.25)',
             },
             {
               label: 'STANDING',
@@ -469,7 +507,6 @@ export default function EventSummaryPage() {
           ))}
         </div>
 
-        {/* Waves Breakdown */}
         <div
           style={{
             display: 'grid',
@@ -479,6 +516,13 @@ export default function EventSummaryPage() {
           }}
         >
           {[
+            {
+              label: 'SINGLE · WAVES',
+              color: '#60a5fa',
+              w1: counts.single_wave_1,
+              w2: counts.single_wave_2,
+              w3: counts.single_wave_3,
+            },
             {
               label: 'STANDING · WAVES',
               color: '#27AE60',
@@ -546,7 +590,6 @@ export default function EventSummaryPage() {
           ))}
         </div>
 
-        {/* Table */}
         <div
           style={{
             background: 'rgba(255,255,255,0.02)',
@@ -658,7 +701,6 @@ export default function EventSummaryPage() {
         </div>
       </div>
 
-      {/* Modal */}
       {selected && (
         <div
           onClick={() => setSelected(null)}

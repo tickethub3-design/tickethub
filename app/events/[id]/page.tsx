@@ -29,6 +29,13 @@ type EventType = {
   is_active: boolean
   is_finished: boolean
 
+  single_wave_1_price?: number | null
+  single_wave_1_sold_out?: boolean | null
+  single_wave_2_price?: number | null
+  single_wave_2_sold_out?: boolean | null
+  single_wave_3_price?: number | null
+  single_wave_3_sold_out?: boolean | null
+
   standing_wave_1_price?: number | null
   standing_wave_1_sold_out?: boolean | null
   standing_wave_2_price?: number | null
@@ -466,6 +473,16 @@ export default function EventPage() {
       </main>
     )
 
+  const single = getWaveInfo({
+    wave_1_price: event.single_wave_1_price,
+    wave_1_sold_out: event.single_wave_1_sold_out,
+    wave_2_price: event.single_wave_2_price,
+    wave_2_sold_out: event.single_wave_2_sold_out,
+    wave_3_price: event.single_wave_3_price,
+    wave_3_sold_out: event.single_wave_3_sold_out,
+    is_finished: event.is_finished,
+  })
+
   const standing = getWaveInfo({
     wave_1_price: event.standing_wave_1_price,
     wave_1_sold_out: event.standing_wave_1_sold_out,
@@ -496,11 +513,16 @@ export default function EventPage() {
     is_finished: event.is_finished,
   })
 
+  const noSingle = !event.single_wave_1_price && !event.single_wave_2_price && !event.single_wave_3_price
   const noStanding = !event.standing_wave_1_price && !event.standing_wave_2_price && !event.standing_wave_3_price
   const noVip = !event.vip_wave_1_price && !event.vip_wave_2_price && !event.vip_wave_3_price
   const noBackstage = !event.backstage_wave_1_price && !event.backstage_wave_2_price && !event.backstage_wave_3_price
 
-  const allSoldOut = (noStanding || standing.soldOut) && (noVip || vip.soldOut) && (noBackstage || backstage.soldOut)
+  const allSoldOut =
+    (noSingle || single.soldOut) &&
+    (noStanding || standing.soldOut) &&
+    (noVip || vip.soldOut) &&
+    (noBackstage || backstage.soldOut)
 
   const { full: fullDate, time: eventTime } = formatDate(event.date)
 
@@ -967,6 +989,16 @@ export default function EventPage() {
           <TrustBadges />
 
           <div className="ticket-grid">
+            {!noSingle && (
+              <TicketCard
+                label="SINGLE"
+                info={single}
+                onClick={scrollToBooking}
+                accent="#60a5fa"
+                helper="Single ticket access with the currently active wave price."
+              />
+            )}
+
             {!noStanding && (
               <TicketCard
                 label="STANDING"

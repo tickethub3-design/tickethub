@@ -73,7 +73,7 @@ export default function DashboardPage() {
 
   const logout = () => {
     ;['admin_auth', 'admin_role', 'admin_username', 'admin_id'].forEach(k =>
-      localStorage.removeItem(k),
+      localStorage.removeItem(k)
     )
     router.push('/dashboard/login')
   }
@@ -98,11 +98,19 @@ export default function DashboardPage() {
   ]
 
   return (
-    <main style={{ minHeight: '100vh', backgroundColor: '#0a0f1e', padding: 0, fontFamily: 'Inter, sans-serif', display: 'flex', flexDirection: 'column' }}>
+    <main
+      style={{
+        minHeight: '100vh',
+        backgroundColor: '#0a0f1e',
+        padding: 0,
+        fontFamily: 'Inter, sans-serif',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
       <TopBar title="Dashboard" role={role} roleBadgeColor={badge} username={username} onLogout={logout} />
 
       <div style={{ flex: 1, maxWidth: 1200, margin: '0 auto', width: '100%', padding: '96px 24px 80px' }}>
-        {/* PAGE TITLE */}
         <div style={{ marginBottom: 40 }}>
           <span style={{ color: '#2E75B6', fontSize: 11, fontWeight: 700, letterSpacing: '2.5px' }}>OVERVIEW</span>
           <h1
@@ -119,7 +127,6 @@ export default function DashboardPage() {
           </h1>
         </div>
 
-        {/* STATS — admin + staff */}
         {(role === 'admin' || role === 'staff') && (
           <>
             <div
@@ -166,7 +173,6 @@ export default function DashboardPage() {
               ))}
             </div>
 
-            {/* REVENUE — admin only */}
             {role === 'admin' && (
               <div
                 style={{
@@ -255,7 +261,6 @@ export default function DashboardPage() {
           </>
         )}
 
-        {/* NAV CARDS */}
         <div
           style={{
             display: 'grid',

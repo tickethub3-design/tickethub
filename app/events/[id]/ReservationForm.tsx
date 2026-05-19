@@ -1,4 +1,5 @@
 'use client'
+
 import { useState, useMemo } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
@@ -13,6 +14,14 @@ type EventForReservation = {
   id: string
   title: string
   is_finished?: boolean | null
+
+  // Single waves
+  single_wave_1_price?: number | null
+  single_wave_1_sold_out?: boolean | null
+  single_wave_2_price?: number | null
+  single_wave_2_sold_out?: boolean | null
+  single_wave_3_price?: number | null
+  single_wave_3_sold_out?: boolean | null
 
   // Standing waves
   standing_wave_1_price?: number | null
@@ -33,7 +42,6 @@ type EventForReservation = {
 
 type Props = { event: EventForReservation }
 
-// نفس الدالة اللي في صفحة الحدث
 function getWaveInfo(opts: {
   wave_1_price?: number | null
   wave_1_sold_out?: boolean | null
@@ -54,8 +62,7 @@ function getWaveInfo(opts: {
   } = opts
 
   const wave1Available = !wave_1_sold_out && wave_1_price != null
-  const wave2Available =
-    wave_1_sold_out && !wave_2_sold_out && wave_2_price != null
+  const wave2Available = wave_1_sold_out && !wave_2_sold_out && wave_2_price != null
   const wave3Available =
     wave_1_sold_out &&
     !!wave_2_sold_out &&
@@ -91,6 +98,7 @@ export default function ReservationForm({ event }: Props) {
   const router = useRouter()
 
   // عدد الأشخاص لكل نوع
+  const [singleCount, setSingleCount] = useState(0)
   const [standingCount, setStandingCount] = useState(0)
   const [backstageCount, setBackstageCount] = useState(0)
 
@@ -103,7 +111,20 @@ export default function ReservationForm({ event }: Props) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // حساب Waves من نفس أعمدة Standing / Backstage
+  const single = useMemo(
+    () =>
+      getWaveInfo({
+        wave_1_price: event.single_wave_1_price,
+        wave_1_sold_out: event.single_wave_1_sold_out,
+        wave_2_price: event.single_wave_2_price,
+        wave_2_sold_out: event.single_wave_2_sold_out,
+        wave_3_price: event.single_wave_3_price,
+        wave_3_sold_out: event.single_wave_3_sold_out,
+        is_finished: !!event.is_finished,
+      }),
+    [event],
+  )
+
   const standing = useMemo(
     () =>
       getWaveInfo({
@@ -132,23 +153,11 @@ export default function ReservationForm({ event }: Props) {
     [event],
   )
 
-  const allStandingUnavailable =
-    standing.currentPrice == null || standing.soldOut
-  const allBackstageUnavailable =
-    backstage.currentPrice == null || backstage.soldOut
+  const allSingleUnavailable = single.currentPrice == null || single.soldOut
+  const allStandingUnavailable = standing.currentPrice == null || standing.soldOut
+  const allBackstageUnavailable = backstage.currentPrice == null || backstage.soldOut
 
-  const totalPeople = standingCount + backstageCount
-
-  const handleCountsChange = (type: 'standing' | 'backstage', value: number) => {
-    const safe = Math.max(0, Math.min(10, value || 0))
-    if (type === 'standing') {
-      setStandingCount(safe)
-      syncExtraPeople(safe + backstageCount)
-    } else {
-      setBackstageCount(safe)
-      syncExtraPeople(standingCount + safe)
-    }
-  }
+  const totalPeople = singleCount + standingCount + backstageCount
 
   const syncExtraPeople = (newTotalPeople: number) => {
     const safeTotal = Math.max(1, Math.min(10, newTotalPeople || 0))
@@ -157,6 +166,24 @@ export default function ReservationForm({ event }: Props) {
       extraPeople[i] || { name: '', instagram: '', phone: '' },
     )
     setExtraPeople(extras)
+  }
+
+  const handleCountsChange = (
+    type: 'single' | 'standing' | 'backstage',
+    value: number,
+  ) => {
+    const safe = Math.max(0, Math.min(10, value || 0))
+
+    if (type === 'single') {
+      setSingleCount(safe)
+      syncExtraPeople(safe + standingCount + backstageCount)
+    } else if (type === 'standing') {
+      setStandingCount(safe)
+      syncExtraPeople(singleCount + safe + backstageCount)
+    } else {
+      setBackstageCount(safe)
+      syncExtraPeople(singleCount + standingCount + safe)
+    }
   }
 
   const updateExtra = (i: number, field: keyof Person, value: string) => {
@@ -174,16 +201,17 @@ export default function ReservationForm({ event }: Props) {
       return
     }
 
-    if (standingCount === 0 && backstageCount === 0) {
-      setError('لازم تختار على الأقل تذكرة واحدة (Standing أو Backstage).')
+    if (singleCount === 0 && standingCount === 0 && backstageCount === 0) {
+      setError('لازم تختار على الأقل تذكرة واحدة.')
       return
     }
 
     if (
+      (singleCount > 0 && allSingleUnavailable) ||
       (standingCount > 0 && allStandingUnavailable) ||
       (backstageCount > 0 && allBackstageUnavailable)
     ) {
-      setError('في Wave مقفولة حاليًا، راجع الأسعار المتاحة وجرّب تاني.')
+      setError('في نوع تذكرة أو Wave غير متاح حاليًا، راجع الأسعار المتاحة وجرّب تاني.')
       return
     }
 
@@ -192,22 +220,23 @@ export default function ReservationForm({ event }: Props) {
     const {
       data: { user },
     } = await supabase.auth.getUser()
+
     if (!user) {
       setLoading(false)
-      router.push(
-        '/auth/login?redirect=' + encodeURIComponent(window.location.pathname),
-      )
+      router.push('/auth/login?redirect=' + encodeURIComponent(window.location.pathname))
       return
     }
 
+    const singlePrice = single.currentPrice ?? 0
     const standingPrice = standing.currentPrice ?? 0
     const backstagePrice = backstage.currentPrice ?? 0
 
+    const singleSubtotal = singlePrice * singleCount
     const standingSubtotal = standingPrice * standingCount
     const backstageSubtotal = backstagePrice * backstageCount
-    const subtotal = standingSubtotal + backstageSubtotal
+    const subtotal = singleSubtotal + standingSubtotal + backstageSubtotal
 
-    const taxRate = 0.14
+    const taxRate = 0.08
     const taxAmount = Math.round(subtotal * taxRate)
     const totalPrice = subtotal + taxAmount
 
@@ -224,6 +253,10 @@ export default function ReservationForm({ event }: Props) {
         num_people: totalPeople,
         people_details: extraPeople,
         status: 'pending',
+
+        single_count: singleCount,
+        single_price_per_person: singlePrice,
+        single_wave_label: single.currentWaveLabel,
 
         standing_count: standingCount,
         standing_price_per_person: standingPrice,
@@ -250,15 +283,19 @@ export default function ReservationForm({ event }: Props) {
     router.push(`/reservation-success?id=${data.id}`)
   }
 
+  const singleSubtotal =
+    single.currentPrice != null ? single.currentPrice * singleCount : 0
   const standingSubtotal =
     standing.currentPrice != null ? standing.currentPrice * standingCount : 0
   const backstageSubtotal =
     backstage.currentPrice != null ? backstage.currentPrice * backstageCount : 0
-  const subtotal = standingSubtotal + backstageSubtotal
-  const tax = Math.round(subtotal * 0.14)
+
+  const subtotal = singleSubtotal + standingSubtotal + backstageSubtotal
+  const tax = Math.round(subtotal * 0.08)
   const total = subtotal + tax
 
   const allSoldOut =
+    (allSingleUnavailable || singleCount === 0) &&
     (allStandingUnavailable || standingCount === 0) &&
     (allBackstageUnavailable || backstageCount === 0)
 
@@ -270,6 +307,7 @@ export default function ReservationForm({ event }: Props) {
       <h2 className="text-2xl font-bold text-yellow-400 mb-4">
         احجز مكانك 🎟️
       </h2>
+
       {error && <p className="text-red-400 text-sm">{error}</p>}
 
       {event.is_finished ? (
@@ -278,12 +316,42 @@ export default function ReservationForm({ event }: Props) {
         </div>
       ) : allSoldOut ? (
         <div className="bg-red-900/30 border border-red-500/50 text-red-300 text-center p-4 rounded-xl font-bold">
-          كل التذاكر المتاحة للStanding و Backstage خلصت ❌
+          كل التذاكر المتاحة خلصت ❌
         </div>
       ) : (
         <>
           {/* اختيار عدد التذاكر لكل نوع */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Single */}
+            <div className="border border-blue-400/40 rounded-xl p-4 space-y-2">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-blue-300 font-bold text-sm">
+                  Single
+                </span>
+                {single.currentPrice != null && !single.soldOut ? (
+                  <span className="text-xs text-blue-200">
+                    {single.currentWaveLabel || 'CURRENT WAVE'} · {single.currentPrice} جنيه
+                  </span>
+                ) : (
+                  <span className="text-xs text-red-300">SOLD OUT</span>
+                )}
+              </div>
+              <input
+                type="number"
+                min={0}
+                max={10}
+                disabled={single.soldOut || single.currentPrice == null}
+                className="w-full bg-gray-800 text-white p-3 rounded-xl border border-gray-700 focus:border-blue-400 outline-none disabled:opacity-40"
+                value={singleCount}
+                onChange={e =>
+                  handleCountsChange('single', parseInt(e.target.value) || 0)
+                }
+              />
+              <p className="text-xs text-gray-400">
+                عدد تذاكر الـ Single اللي عايز تحجزها.
+              </p>
+            </div>
+
             {/* Standing */}
             <div className="border border-yellow-400/40 rounded-xl p-4 space-y-2">
               <div className="flex items-center justify-between mb-1">
@@ -292,8 +360,7 @@ export default function ReservationForm({ event }: Props) {
                 </span>
                 {standing.currentPrice != null && !standing.soldOut ? (
                   <span className="text-xs text-yellow-300">
-                    {standing.currentWaveLabel || 'CURRENT WAVE'} ·{' '}
-                    {standing.currentPrice} جنيه
+                    {standing.currentWaveLabel || 'CURRENT WAVE'} · {standing.currentPrice} جنيه
                   </span>
                 ) : (
                   <span className="text-xs text-red-300">SOLD OUT</span>
@@ -323,8 +390,7 @@ export default function ReservationForm({ event }: Props) {
                 </span>
                 {backstage.currentPrice != null && !backstage.soldOut ? (
                   <span className="text-xs text-purple-200">
-                    {backstage.currentWaveLabel || 'CURRENT WAVE'} ·{' '}
-                    {backstage.currentPrice} جنيه
+                    {backstage.currentWaveLabel || 'CURRENT WAVE'} · {backstage.currentPrice} جنيه
                   </span>
                 ) : (
                   <span className="text-xs text-red-300">SOLD OUT</span>
@@ -338,10 +404,7 @@ export default function ReservationForm({ event }: Props) {
                 className="w-full bg-gray-800 text-white p-3 rounded-xl border border-gray-700 focus:border-purple-400 outline-none disabled:opacity-40"
                 value={backstageCount}
                 onChange={e =>
-                  handleCountsChange(
-                    'backstage',
-                    parseInt(e.target.value) || 0,
-                  )
+                  handleCountsChange('backstage', parseInt(e.target.value) || 0)
                 }
               />
               <p className="text-xs text-gray-400">
@@ -408,9 +471,7 @@ export default function ReservationForm({ event }: Props) {
                 required
                 className="w-full bg-gray-800 text-white p-3 rounded-xl border border-gray-700 focus:border-yellow-400 outline-none"
                 value={person.instagram}
-                onChange={e =>
-                  updateExtra(i, 'instagram', e.target.value)
-                }
+                onChange={e => updateExtra(i, 'instagram', e.target.value)}
               />
               <input
                 type="tel"
@@ -426,15 +487,16 @@ export default function ReservationForm({ event }: Props) {
           {/* السعر والإجمالي */}
           <div className="bg-gray-800 rounded-xl p-4 text-yellow-400 font-bold flex flex-col gap-1 text-sm">
             <p>
-              Standing: {standingCount} × {standing.currentPrice ?? 0} ={' '}
-              {standingSubtotal} جنيه
+              Single: {singleCount} × {single.currentPrice ?? 0} = {singleSubtotal} جنيه
             </p>
             <p>
-              Backstage: {backstageCount} × {backstage.currentPrice ?? 0} ={' '}
-              {backstageSubtotal} جنيه
+              Standing: {standingCount} × {standing.currentPrice ?? 0} = {standingSubtotal} جنيه
+            </p>
+            <p>
+              Backstage: {backstageCount} × {backstage.currentPrice ?? 0} = {backstageSubtotal} جنيه
             </p>
             <p>Subtotal: {subtotal} جنيه</p>
-            <p>Tax (14%): {tax} جنيه</p>
+            <p>Tax (8%): {tax} جنيه</p>
             <p className="text-lg mt-1">الإجمالي: {total} جنيه</p>
           </div>
 

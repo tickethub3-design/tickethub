@@ -15,18 +15,28 @@ type EventType = {
   image_url?: string
   is_active: boolean
   is_finished: boolean
+
+  single_wave_1_price?: number | null
+  single_wave_1_sold_out?: boolean | null
+  single_wave_2_price?: number | null
+  single_wave_2_sold_out?: boolean | null
+  single_wave_3_price?: number | null
+  single_wave_3_sold_out?: boolean | null
+
   standing_wave_1_price?: number | null
   standing_wave_1_sold_out?: boolean | null
   standing_wave_2_price?: number | null
   standing_wave_2_sold_out?: boolean | null
   standing_wave_3_price?: number | null
   standing_wave_3_sold_out?: boolean | null
+
   backstage_wave_1_price?: number | null
   backstage_wave_1_sold_out?: boolean | null
   backstage_wave_2_price?: number | null
   backstage_wave_2_sold_out?: boolean | null
   backstage_wave_3_price?: number | null
   backstage_wave_3_sold_out?: boolean | null
+
   vip_wave_1_price?: number | null
   vip_wave_1_sold_out?: boolean | null
   vip_wave_2_price?: number | null
@@ -35,7 +45,7 @@ type EventType = {
   vip_wave_3_sold_out?: boolean | null
 }
 
-type TicketType = 'standing' | 'backstage' | 'vip'
+type TicketType = 'single' | 'standing' | 'backstage' | 'vip'
 
 type PersonMini = {
   name: string
@@ -103,6 +113,7 @@ const isValidInstagramUrl = (url: string) => {
 }
 
 const ticketTypeStyle: Record<TicketType, { color: string; label: string }> = {
+  single: { color: '#60a5fa', label: 'SINGLE' },
   standing: { color: '#27AE60', label: 'STANDING' },
   backstage: { color: '#8b5cf6', label: 'BACKSTAGE' },
   vip: { color: '#F0A500', label: 'VIP' },
@@ -118,11 +129,13 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
   const [email, setEmail] = useState('')
   const [instagram, setInstagram] = useState('')
 
+  const [singleCount, setSingleCount] = useState(0)
   const [standingCount, setStandingCount] = useState(0)
   const [backstageCount, setBackstageCount] = useState(0)
   const [vipCount, setVipCount] = useState(0)
   const [people, setPeople] = useState<PersonMini[]>([])
 
+  const [singleOpen, setSingleOpen] = useState(false)
   const [standingOpen, setStandingOpen] = useState(false)
   const [backstageOpen, setBackstageOpen] = useState(false)
   const [vipOpen, setVipOpen] = useState(false)
@@ -140,6 +153,20 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
       .single()
       .then(({ data }) => setEvent(data as EventType | null))
   }, [id])
+
+  const single = useMemo(
+    () =>
+      getWaveInfo({
+        wave_1_price: event?.single_wave_1_price,
+        wave_1_sold_out: event?.single_wave_1_sold_out,
+        wave_2_price: event?.single_wave_2_price,
+        wave_2_sold_out: event?.single_wave_2_sold_out,
+        wave_3_price: event?.single_wave_3_price,
+        wave_3_sold_out: event?.single_wave_3_sold_out,
+        is_finished: event?.is_finished ?? false,
+      }),
+    [event]
+  )
 
   const standing = useMemo(
     () =>
@@ -183,6 +210,11 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
     [event]
   )
 
+  const hasSingle =
+    event?.single_wave_1_price != null ||
+    event?.single_wave_2_price != null ||
+    event?.single_wave_3_price != null
+
   const hasStanding =
     event?.standing_wave_1_price != null ||
     event?.standing_wave_2_price != null ||
@@ -198,17 +230,26 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
     event?.vip_wave_2_price != null ||
     event?.vip_wave_3_price != null
 
+  const allSingleUnavailable = !hasSingle || single.price == null || single.soldOut
   const allStandingUnavailable = !hasStanding || standing.price == null || standing.soldOut
   const allBackstageUnavailable = !hasBackstage || backstage.price == null || backstage.soldOut
   const allVipUnavailable = !hasVip || vip.price == null || vip.soldOut
 
-  const totalPeople = standingCount + backstageCount + vipCount
+  const totalPeople = singleCount + standingCount + backstageCount + vipCount
 
   const mainTicketType: TicketType | null =
-    standingCount > 0 ? 'standing' : backstageCount > 0 ? 'backstage' : vipCount > 0 ? 'vip' : null
+    singleCount > 0
+      ? 'single'
+      : standingCount > 0
+      ? 'standing'
+      : backstageCount > 0
+      ? 'backstage'
+      : vipCount > 0
+      ? 'vip'
+      : null
 
-  const syncPeople = (sc: number, bc: number, vc: number) => {
-    const total = sc + bc + vc
+  const syncPeople = (sic: number, sc: number, bc: number, vc: number) => {
+    const total = sic + sc + bc + vc
     const extrasNeeded = Math.max(0, total - 1)
     const arr: PersonMini[] = []
 
@@ -216,8 +257,9 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
       const old = people[i]
       let ticket_type: TicketType
 
-      if (i < sc - 1) ticket_type = 'standing'
-      else if (i < sc - 1 + bc) ticket_type = 'backstage'
+      if (i < sic - 1) ticket_type = 'single'
+      else if (i < sic - 1 + sc) ticket_type = 'standing'
+      else if (i < sic - 1 + sc + bc) ticket_type = 'backstage'
       else ticket_type = 'vip'
 
       arr.push(old ? { ...old, ticket_type } : { name: '', phone: '', instagram: '', ticket_type })
@@ -228,21 +270,24 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
 
   const handleNumChange = (type: TicketType, n: number) => {
     const safe = Math.max(0, Math.min(10, n || 0))
+    const sic = type === 'single' ? safe : singleCount
     const sc = type === 'standing' ? safe : standingCount
     const bc = type === 'backstage' ? safe : backstageCount
     const vc = type === 'vip' ? safe : vipCount
 
+    if (type === 'single') setSingleCount(safe)
     if (type === 'standing') setStandingCount(safe)
     if (type === 'backstage') setBackstageCount(safe)
     if (type === 'vip') setVipCount(safe)
 
-    syncPeople(sc, bc, vc)
+    syncPeople(sic, sc, bc, vc)
   }
 
   const updatePerson = (i: number, field: keyof PersonMini, value: string) =>
     setPeople(prev => prev.map((p, idx) => (idx === i ? { ...p, [field]: value } : p)))
 
   const getSubtotal = () =>
+    (single.price ?? 0) * singleCount +
     (standing.price ?? 0) * standingCount +
     (backstage.price ?? 0) * backstageCount +
     (vip.price ?? 0) * vipCount
@@ -251,11 +296,13 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
   const getTotal = () => getSubtotal() + getTax()
 
   const allSoldOut =
+    (!hasSingle || single.soldOut || single.price == null) &&
     (!hasStanding || standing.soldOut || standing.price == null) &&
     (!hasBackstage || backstage.soldOut || backstage.price == null) &&
     (!hasVip || vip.soldOut || vip.price == null)
 
   const resetForm = () => {
+    setSingleCount(0)
     setStandingCount(0)
     setBackstageCount(0)
     setVipCount(0)
@@ -264,6 +311,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
     setPhone('')
     setEmail('')
     setInstagram('')
+    setSingleOpen(false)
     setStandingOpen(false)
     setBackstageOpen(false)
     setVipOpen(false)
@@ -355,15 +403,23 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
       name,
       num_people: totalPeople,
       people_details: peopleDetails,
+
+      single_count: singleCount,
+      single_price_per_person: single.price ?? 0,
+      single_wave_label: single.key,
+
       standing_count: standingCount,
       standing_price_per_person: standing.price ?? 0,
       standing_wave_label: standing.key,
+
       backstage_count: backstageCount,
       backstage_price_per_person: backstage.price ?? 0,
       backstage_wave_label: backstage.key,
+
       vip_count: vipCount,
       vip_price_per_person: vip.price ?? 0,
       vip_wave_label: vip.key,
+
       subtotal_price: getSubtotal(),
       tax_amount: getTax(),
       total_price: getTotal(),
@@ -501,7 +557,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
     </div>
   )
 
-  const ticketColumns = [hasStanding, hasBackstage, hasVip].filter(Boolean).length
+  const ticketColumns = [hasSingle, hasStanding, hasBackstage, hasVip].filter(Boolean).length
 
   return (
     <main
@@ -624,6 +680,11 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
               </div>
 
               <div style={{ minWidth: 180 }}>
+                {hasSingle && !single.soldOut && single.price != null && (
+                  <div style={{ color: '#60a5fa', marginBottom: 6, fontSize: 13, fontWeight: 600 }}>
+                    Single · {single.price} EGP
+                  </div>
+                )}
                 {hasStanding && !standing.soldOut && standing.price != null && (
                   <div style={{ color: '#4ade80', marginBottom: 6, fontSize: 13, fontWeight: 600 }}>
                     Standing · {standing.price} EGP
@@ -739,6 +800,39 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                   gap: 14,
                 }}
               >
+                {hasSingle && (
+                  <div
+                    style={{
+                      background: 'rgba(255,255,255,0.025)',
+                      border: '1px solid rgba(96,165,250,0.16)',
+                      borderRadius: 18,
+                      padding: 16,
+                    }}
+                  >
+                    <label style={{ ...labelStyle, color: '#60a5fa', marginBottom: 10 }}>
+                      SINGLE{single.soldOut ? ' — SOLD OUT' : ` — ${single.price} EGP`}
+                    </label>
+                    <p style={{ color: 'rgba(255,255,255,0.52)', fontSize: 13, lineHeight: 1.6, margin: '0 0 12px' }}>
+                      Single ticket access.
+                    </p>
+                    <TicketDropdown
+                      value={singleCount}
+                      disabled={allSingleUnavailable}
+                      isOpen={singleOpen}
+                      color="#60a5fa"
+                      setIsOpen={v => {
+                        setSingleOpen(v)
+                        if (v) {
+                          setStandingOpen(false)
+                          setBackstageOpen(false)
+                          setVipOpen(false)
+                        }
+                      }}
+                      onChange={n => handleNumChange('single', n)}
+                    />
+                  </div>
+                )}
+
                 {hasStanding && (
                   <div
                     style={{
@@ -762,6 +856,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                       setIsOpen={v => {
                         setStandingOpen(v)
                         if (v) {
+                          setSingleOpen(false)
                           setBackstageOpen(false)
                           setVipOpen(false)
                         }
@@ -794,6 +889,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                       setIsOpen={v => {
                         setBackstageOpen(v)
                         if (v) {
+                          setSingleOpen(false)
                           setStandingOpen(false)
                           setVipOpen(false)
                         }
@@ -826,6 +922,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                       setIsOpen={v => {
                         setVipOpen(v)
                         if (v) {
+                          setSingleOpen(false)
                           setStandingOpen(false)
                           setBackstageOpen(false)
                         }
@@ -953,6 +1050,13 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                 <p style={{ color: '#93c5fd', fontSize: 12, letterSpacing: '2px', fontWeight: 700, margin: '0 0 16px' }}>
                   BOOKING SUMMARY
                 </p>
+
+                {singleCount > 0 && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, marginBottom: 8 }}>
+                    <span style={{ color: '#60a5fa', fontSize: 14 }}>Single ({singleCount}x)</span>
+                    <span style={{ color: 'rgba(255,255,255,0.78)', fontSize: 14 }}>{(single.price ?? 0) * singleCount} EGP</span>
+                  </div>
+                )}
 
                 {standingCount > 0 && (
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, marginBottom: 8 }}>
