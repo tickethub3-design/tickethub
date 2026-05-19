@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import Navbar from '@/app/components/Navbar'
 
 type Event = {
   id: string
@@ -20,7 +21,6 @@ export default function HomePage() {
   const [upcoming, setUpcoming] = useState<Event[]>([])
   const [past, setPast] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
-  const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
     Promise.all([
@@ -83,148 +83,7 @@ export default function HomePage() {
         }
       `}</style>
 
-      {/* NAVBAR */}
-      <nav
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 100,
-          background: 'rgba(10,15,30,0.92)',
-          backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(46,117,182,0.12)',
-          padding: '0 32px',
-          height: 64,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div
-            style={{
-              width: 34,
-              height: 34,
-              borderRadius: 9,
-              background: 'linear-gradient(135deg, #1A3C5E, #2E75B6)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 15,
-            }}
-          >
-            🎟️
-          </div>
-          <span style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 19, color: '#fff' }}>
-            Ticket<span style={{ color: '#2E75B6' }}>Hub</span>
-          </span>
-        </Link>
-
-        <div className="nav-links">
-          <Link href="/events" style={navLink}>Events</Link>
-          <a href="#about" style={navLink}>About</a>
-          <a href="#contact" style={navLink}>Contact</a>
-          <Link
-            href="/auth/login"
-            style={{
-              ...navLink,
-              border: '1px solid rgba(255,255,255,0.1)',
-              padding: '8px 18px',
-              borderRadius: 8,
-              marginLeft: 12,
-              color: 'rgba(255,255,255,0.75)',
-            }}
-          >
-            Login
-          </Link>
-          <Link
-            href="/auth/register"
-            style={{
-              color: '#fff',
-              textDecoration: 'none',
-              fontSize: 14,
-              fontWeight: 600,
-              padding: '9px 20px',
-              borderRadius: 8,
-              background: 'linear-gradient(135deg, #1A3C5E, #2E75B6)',
-              boxShadow: '0 4px 14px rgba(46,117,182,0.35)',
-              marginLeft: 4,
-            }}
-          >
-            Sign Up
-          </Link>
-        </div>
-
-        <button
-          className="nav-hamburger"
-          onClick={() => setMenuOpen(o => !o)}
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            padding: 8,
-            flexDirection: 'column',
-            gap: 5,
-            alignItems: 'center',
-          }}
-        >
-          {[0, 1, 2].map(i => (
-            <span
-              key={i}
-              style={{
-                display: 'block',
-                width: 24,
-                height: 2,
-                background: 'rgba(255,255,255,0.7)',
-                borderRadius: 2,
-              }}
-            />
-          ))}
-        </button>
-      </nav>
-
-      {/* MOBILE MENU */}
-      <div
-        className={`mobile-menu${menuOpen ? ' open' : ''}`}
-        style={{
-          position: 'fixed',
-          top: 64,
-          left: 0,
-          right: 0,
-          zIndex: 99,
-          background: 'rgba(10,15,30,0.98)',
-          backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(46,117,182,0.12)',
-          flexDirection: 'column',
-          padding: '20px 28px 24px',
-          gap: 4,
-        }}
-      >
-        {[
-          { href: '/events', label: 'Events' },
-          { href: '#about', label: 'About' },
-          { href: '#contact', label: 'Contact' },
-          { href: '/auth/login', label: 'Login' },
-          { href: '/auth/register', label: 'Sign Up' },
-        ].map(l => (
-          <Link
-            key={l.href}
-            href={l.href}
-            onClick={() => setMenuOpen(false)}
-            style={{
-              color: 'rgba(255,255,255,0.65)',
-              textDecoration: 'none',
-              fontSize: 15,
-              fontWeight: 500,
-              padding: '12px 0',
-              borderBottom: '1px solid rgba(255,255,255,0.05)',
-            }}
-          >
-            {l.label}
-          </Link>
-        ))}
-      </div>
+      <Navbar />
 
       {/* HERO */}
       <section
@@ -689,13 +548,6 @@ export default function HomePage() {
   )
 }
 
-const navLink: React.CSSProperties = {
-  color: 'rgba(255,255,255,0.55)',
-  textDecoration: 'none',
-  fontSize: 14,
-  padding: '8px 14px',
-  borderRadius: 8,
-}
 
 function EventCard({ event, isPast = false }: { event: Event; isPast?: boolean }) {
   const date = new Date(event.date)
