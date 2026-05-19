@@ -55,6 +55,7 @@ export default function GuestListPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [workingId, setWorkingId] = useState<string | null>(null)
+  const [workingAction, setWorkingAction] = useState<'delete' | 'qr' | null>(null)
   const [msg, setMsg] = useState('')
   const [error, setError] = useState('')
 
@@ -120,6 +121,41 @@ export default function GuestListPage() {
     setName('')
     setPhone('')
     setInstagram('')
+  }
+
+  const getTicketLinkFromQr = (qrCode: string | null | undefined) => {
+    if (typeof window === 'undefined') return ''
+    if (!qrCode) return ''
+    return `${window.location.origin}/ticket/${qrCode}`
+  }
+
+  const getTicketLink = (ticket: GuestTicket) => {
+    return getTicketLinkFromQr(ticket.qr_code)
+  }
+
+  const getWhatsAppShareLink = (ticket: GuestTicket) => {
+    const ticketLink = getTicketLink(ticket)
+    if (!ticketLink) return ''
+
+    const guestName = ticket.holder_name || ticket.full_name || 'Guest'
+    const eventTitle = event?.title || 'your event'
+
+    const text = `Hi ${guestName},
+Here is your guest ticket for ${eventTitle}.
+
+Ticket link:
+${ticketLink}
+
+Please keep this link safe.`
+
+    const params = new URLSearchParams()
+    params.set('text', text)
+
+    return `https://wa.me/?${params.toString()}`
+  }
+
+  const clearFlashLater = () => {
+    window.setTimeout(() => setMsg(''), 3000)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -204,8 +240,7 @@ export default function GuestListPage() {
     resetForm()
     await load()
     setSaving(false)
-
-    window.setTimeout(() => setMsg(''), 3000)
+    clearFlashLater()
   }
 
   const handleEdit = (ticket: GuestTicket) => {
@@ -226,6 +261,7 @@ export default function GuestListPage() {
     if (!ok) return
 
     setWorkingId(id)
+    setWorkingAction('delete')
     setMsg('')
     setError('')
 
@@ -234,6 +270,7 @@ export default function GuestListPage() {
     if (deleteError) {
       setError(`Delete error: ${deleteError.message}`)
       setWorkingId(null)
+      setWorkingAction(null)
       return
     }
 
@@ -242,7 +279,8 @@ export default function GuestListPage() {
     setMsg('✅ Guest deleted successfully!')
     await load()
     setWorkingId(null)
-    window.setTimeout(() => setMsg(''), 3000)
+    setWorkingAction(null)
+    clearFlashLater()
   }
 
   const handleRegenerateQr = async (ticket: GuestTicket) => {
@@ -252,6 +290,7 @@ export default function GuestListPage() {
     if (!ok) return
 
     setWorkingId(ticket.id)
+    setWorkingAction('qr')
     setMsg('')
     setError('')
 
@@ -266,13 +305,48 @@ export default function GuestListPage() {
     if (qrError) {
       setError(`QR update error: ${qrError.message}`)
       setWorkingId(null)
+      setWorkingAction(null)
       return
     }
 
-    setMsg('✅ QR code regenerated successfully!')
+    const newLink = getTicketLinkFromQr(newQr)
+
+    let copied = false
+    if (newLink) {
+      try {
+        await navigator.clipboard.writeText(newLink)
+        copied = true
+      } catch {
+        copied = false
+      }
+    }
+
+    setMsg(
+      copied
+        ? '✅ QR code regenerated successfully! New ticket link copied.'
+        : '✅ QR code regenerated successfully! New ticket link is ready.'
+    )
+
     await load()
     setWorkingId(null)
-    window.setTimeout(() => setMsg(''), 3000)
+    setWorkingAction(null)
+    clearFlashLater()
+  }
+
+  const handleCopyLink = async (ticket: GuestTicket) => {
+    const link = getTicketLink(ticket)
+    if (!link) {
+      setError('No ticket link available for this guest.')
+      return
+    }
+
+    try {
+      await navigator.clipboard.writeText(link)
+      setMsg('✅ Ticket link copied successfully!')
+      window.setTimeout(() => setMsg(''), 2500)
+    } catch {
+      setError('Failed to copy ticket link.')
+    }
   }
 
   const guestCount = useMemo(() => tickets.length, [tickets])
@@ -355,6 +429,7 @@ export default function GuestListPage() {
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <button
+            type="button"
             onClick={() => router.push(`/dashboard/events/${eventId}/summary`)}
             style={{
               background: 'rgba(240,165,0,0.08)',
@@ -372,6 +447,7 @@ export default function GuestListPage() {
           </button>
 
           <button
+            type="button"
             onClick={() => router.push('/dashboard/events')}
             style={{
               background: 'rgba(255,255,255,0.04)',
@@ -568,6 +644,8 @@ export default function GuestListPage() {
           ) : (
             tickets.map(ticket => {
               const busy = workingId === ticket.id
+              const ticketLink = getTicketLink(ticket)
+              const whatsappLink = getWhatsAppShareLink(ticket)
 
               return (
                 <div
@@ -652,6 +730,9 @@ export default function GuestListPage() {
                     <p style={{ color: '#60a5fa', fontSize: 12, fontWeight: 700, margin: '0 0 5px', wordBreak: 'break-all' }}>
                       QR: {ticket.qr_code || '-'}
                     </p>
+                    <p style={{ color: 'rgba(255,255,255,0.72)', fontSize: 12, margin: '0 0 6px', wordBreak: 'break-all' }}>
+                      Ticket Link: {ticketLink || '-'}
+                    </p>
                     <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, margin: 0 }}>
                       Status: {ticket.status || 'active'}
                     </p>
@@ -659,6 +740,7 @@ export default function GuestListPage() {
 
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     <button
+                      type="button"
                       onClick={() => handleEdit(ticket)}
                       disabled={busy || saving}
                       style={actionBtn('#2E75B6', 'rgba(46,117,182,0.08)', busy || saving)}
@@ -667,19 +749,52 @@ export default function GuestListPage() {
                     </button>
 
                     <button
+                      type="button"
+                      onClick={() => handleCopyLink(ticket)}
+                      disabled={busy || saving || !ticketLink}
+                      style={actionBtn('#86efac', 'rgba(39,174,96,0.08)', busy || saving || !ticketLink)}
+                    >
+                      Copy Link
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (ticketLink) window.open(ticketLink, '_blank', 'noopener,noreferrer')
+                      }}
+                      disabled={busy || saving || !ticketLink}
+                      style={actionBtn('#F0A500', 'rgba(240,165,0,0.08)', busy || saving || !ticketLink)}
+                    >
+                      Open Ticket
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (whatsappLink) window.open(whatsappLink, '_blank', 'noopener,noreferrer')
+                      }}
+                      disabled={busy || saving || !whatsappLink}
+                      style={actionBtn('#25D366', 'rgba(37,211,102,0.08)', busy || saving || !whatsappLink)}
+                    >
+                      WhatsApp
+                    </button>
+
+                    <button
+                      type="button"
                       onClick={() => handleRegenerateQr(ticket)}
                       disabled={busy || saving}
                       style={actionBtn('#60a5fa', 'rgba(96,165,250,0.08)', busy || saving)}
                     >
-                      {busy ? 'Working...' : 'New QR'}
+                      {busy && workingAction === 'qr' ? 'Working...' : 'New QR'}
                     </button>
 
                     <button
+                      type="button"
                       onClick={() => handleDelete(ticket.id)}
                       disabled={busy || saving}
                       style={actionBtn('#E74C3C', 'rgba(231,76,60,0.08)', busy || saving)}
                     >
-                      {busy ? 'Working...' : 'Delete'}
+                      {busy && workingAction === 'delete' ? 'Working...' : 'Delete'}
                     </button>
                   </div>
                 </div>
