@@ -2,7 +2,17 @@
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
-import { ShieldCheck, BadgeCheck, QrCode, ScanLine, MessageCircle, CalendarDays, MapPin, ArrowRight, ChevronDown } from 'lucide-react'
+import {
+  ShieldCheck,
+  BadgeCheck,
+  QrCode,
+  ScanLine,
+  MessageCircle,
+  CalendarDays,
+  MapPin,
+  ArrowRight,
+  ChevronDown,
+} from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 
@@ -103,10 +113,10 @@ function WaveBadge({ waveLabel }: { waveLabel: string }) {
         backgroundColor: c.bg,
         border: `1px solid ${c.border}`,
         borderRadius: 999,
-        padding: '6px 16px',
+        padding: '6px 14px',
         fontSize: 10,
-        fontWeight: 700,
-        letterSpacing: '1.8px',
+        fontWeight: 800,
+        letterSpacing: '1.5px',
         color: c.color,
         display: 'inline-block',
       }}
@@ -136,29 +146,29 @@ function TicketCard({
         if (!info.soldOut) onClick()
       }}
       style={{
-        background: 'rgba(255,255,255,0.03)',
+        background: info.soldOut ? 'rgba(255,255,255,0.022)' : 'rgba(255,255,255,0.035)',
         border: `1px solid ${info.soldOut ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.1)'}`,
-        borderRadius: 22,
+        borderRadius: 24,
         padding: '22px 20px',
         width: '100%',
         textAlign: 'left',
         cursor: info.soldOut ? 'not-allowed' : 'pointer',
         transition: 'transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease',
-        opacity: info.soldOut ? 0.78 : 1,
+        opacity: info.soldOut ? 0.76 : 1,
         boxShadow: '0 12px 30px rgba(0,0,0,0.18)',
       }}
       onMouseEnter={e => {
         if (info.soldOut) return
         e.currentTarget.style.borderColor = `${accent}66`
-        e.currentTarget.style.transform = 'translateY(-3px)'
+        e.currentTarget.style.transform = 'translateY(-4px)'
         e.currentTarget.style.boxShadow = '0 18px 34px rgba(0,0,0,0.28)'
-        e.currentTarget.style.background = 'rgba(255,255,255,0.045)'
+        e.currentTarget.style.background = 'rgba(255,255,255,0.05)'
       }}
       onMouseLeave={e => {
         e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'
         e.currentTarget.style.transform = 'translateY(0)'
         e.currentTarget.style.boxShadow = '0 12px 30px rgba(0,0,0,0.18)'
-        e.currentTarget.style.background = 'rgba(255,255,255,0.03)'
+        e.currentTarget.style.background = info.soldOut ? 'rgba(255,255,255,0.022)' : 'rgba(255,255,255,0.035)'
       }}
     >
       <p
@@ -166,7 +176,7 @@ function TicketCard({
           color: accent,
           fontSize: 11,
           letterSpacing: '2px',
-          fontWeight: 700,
+          fontWeight: 800,
           margin: '0 0 12px',
         }}
       >
@@ -186,7 +196,7 @@ function TicketCard({
             }}
           >
             {info.currentPrice}{' '}
-            <span style={{ color: 'rgba(255,255,255,0.42)', fontSize: 14, fontWeight: 500 }}>
+            <span style={{ color: 'rgba(255,255,255,0.44)', fontSize: 14, fontWeight: 500 }}>
               EGP / person
             </span>
           </p>
@@ -197,10 +207,10 @@ function TicketCard({
 
           <p
             style={{
-              color: 'rgba(255,255,255,0.6)',
+              color: 'rgba(255,255,255,0.62)',
               fontSize: 13,
               margin: 0,
-              lineHeight: 1.7,
+              lineHeight: 1.72,
             }}
           >
             {helper}
@@ -225,27 +235,27 @@ function TrustBadges() {
     {
       icon: ShieldCheck,
       title: 'Secure Booking',
-      subtitle: 'Your reservation details are safely handled.',
+      subtitle: 'Reservation details are handled safely.',
     },
     {
       icon: BadgeCheck,
       title: 'Official Tickets',
-      subtitle: 'All bookings are verified through the platform.',
+      subtitle: 'Bookings are verified through the platform.',
     },
     {
       icon: QrCode,
       title: 'QR Ticket Access',
-      subtitle: 'Your entry QR appears after confirmation.',
+      subtitle: 'Your QR appears after confirmation.',
     },
     {
       icon: ScanLine,
       title: 'Fast Entry',
-      subtitle: 'Quick scan at the gate for smooth check-in.',
+      subtitle: 'Quick scan at the gate for smooth access.',
     },
     {
       icon: MessageCircle,
       title: 'Instagram Support',
-      subtitle: 'Need help? Support is handled via Instagram.',
+      subtitle: 'Support is handled through Instagram.',
     },
   ]
 
@@ -253,9 +263,9 @@ function TrustBadges() {
     <div
       style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
         gap: 12,
-        marginBottom: 32,
+        marginBottom: 34,
       }}
     >
       {badges.map(({ icon: Icon, title, subtitle }) => (
@@ -270,8 +280,8 @@ function TrustBadges() {
         >
           <div
             style={{
-              width: 38,
-              height: 38,
+              width: 40,
+              height: 40,
               borderRadius: 12,
               background: 'rgba(46,117,182,0.12)',
               border: '1px solid rgba(46,117,182,0.22)',
@@ -496,8 +506,7 @@ export default function EventPage() {
     <main
       style={{
         minHeight: '100vh',
-        background:
-          'linear-gradient(180deg, #08101d 0%, #0a0f1e 34%, #0c1323 100%)',
+        background: 'linear-gradient(180deg, #08101d 0%, #0a0f1e 34%, #0c1323 100%)',
         fontFamily: 'Inter, sans-serif',
       }}
     >
@@ -517,11 +526,34 @@ export default function EventPage() {
         }
 
         .event-content {
-          max-width: 980px;
+          max-width: 1040px;
           margin: 0 auto;
           padding: 0 24px 140px;
           position: relative;
           z-index: 2;
+        }
+
+        .hero-shell {
+          background: rgba(8,14,28,0.76);
+          border: 1px solid rgba(255,255,255,0.07);
+          border-radius: 28px;
+          box-shadow: 0 18px 46px rgba(0,0,0,0.24);
+          backdrop-filter: blur(16px);
+          padding: 28px;
+        }
+
+        .ticket-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+          gap: 16px;
+          margin-bottom: 34px;
+        }
+
+        .rules-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+          margin-bottom: 28px;
         }
 
         .floating-booking-bar {
@@ -531,7 +563,7 @@ export default function EventPage() {
           bottom: 18px;
           width: min(760px, calc(100% - 24px));
           z-index: 120;
-          background: rgba(10,15,30,0.88);
+          background: rgba(10,15,30,0.9);
           border: 1px solid rgba(255,255,255,0.08);
           backdrop-filter: blur(18px);
           box-shadow: 0 18px 40px rgba(0,0,0,0.28);
@@ -581,6 +613,7 @@ export default function EventPage() {
           font-weight: 800;
           letter-spacing: 1.5px;
           min-width: 160px;
+          box-shadow: 0 10px 28px rgba(46,117,182,0.28);
         }
 
         @media (min-width: 769px) {
@@ -598,7 +631,8 @@ export default function EventPage() {
             letter-spacing: -1px !important;
           }
 
-          .ticket-grid {
+          .ticket-grid,
+          .rules-grid {
             grid-template-columns: 1fr !important;
           }
 
@@ -611,8 +645,9 @@ export default function EventPage() {
             align-items: flex-start !important;
           }
 
-          .rules-grid {
-            grid-template-columns: 1fr !important;
+          .hero-shell {
+            padding: 20px;
+            border-radius: 22px;
           }
 
           .floating-booking-bar {
@@ -700,423 +735,381 @@ export default function EventPage() {
               style={{
                 position: 'absolute',
                 inset: 0,
-                background: 'linear-gradient(to bottom, rgba(10,15,30,0.12) 0%, #0a0f1e 100%)',
+                background: 'linear-gradient(to bottom, rgba(10,15,30,0.08) 0%, rgba(10,15,30,0.6) 45%, #0a0f1e 100%)',
                 pointerEvents: 'none',
               }}
             />
           </div>
         ) : (
-          <div style={{ width: '100%', height: 220, background: 'linear-gradient(135deg, #0d1528, #1A3C5E)' }} />
+          <div style={{ width: '100%', height: 260, background: 'linear-gradient(135deg, #0d1528, #1A3C5E)' }} />
         )}
       </div>
 
       <div className="event-content">
-        <Link
-          href="/events"
-          style={{
-            color: 'rgba(255,255,255,0.42)',
-            fontSize: 12,
-            letterSpacing: '2px',
-            textDecoration: 'none',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-            marginBottom: 24,
-            marginTop: 24,
-            padding: '9px 16px',
-            borderRadius: 12,
-            border: '1px solid rgba(255,255,255,0.06)',
-            background: 'rgba(255,255,255,0.025)',
-          }}
-        >
-          ← BACK TO EVENTS
-        </Link>
-
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 18 }}>
-          {event.is_finished && (
-            <span
-              style={{
-                background: 'rgba(100,100,100,0.15)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                color: 'rgba(255,255,255,0.42)',
-                padding: '6px 16px',
-                borderRadius: 999,
-                fontSize: 10,
-                fontWeight: 700,
-                letterSpacing: '2px',
-              }}
-            >
-              EVENT ENDED
-            </span>
-          )}
-
-          {allSoldOut && !event.is_finished && (
-            <span
-              style={{
-                background: 'rgba(239,68,68,0.1)',
-                border: '1px solid rgba(239,68,68,0.35)',
-                color: '#ef4444',
-                padding: '6px 16px',
-                borderRadius: 999,
-                fontSize: 10,
-                fontWeight: 700,
-                letterSpacing: '2px',
-              }}
-            >
-              SOLD OUT
-            </span>
-          )}
-
-          {!event.is_finished && event.is_active && !allSoldOut && (
-            <span
-              style={{
-                background: 'rgba(34,197,94,0.1)',
-                border: '1px solid rgba(34,197,94,0.3)',
-                color: '#4ade80',
-                padding: '6px 16px',
-                borderRadius: 999,
-                fontSize: 10,
-                fontWeight: 700,
-                letterSpacing: '2px',
-              }}
-            >
-              BOOKING OPEN
-            </span>
-          )}
-        </div>
-
-        <h1
-          className="event-title"
-          style={{
-            fontFamily: 'Poppins, sans-serif',
-            fontSize: 'clamp(34px, 5vw, 58px)',
-            fontWeight: 900,
-            color: '#fff',
-            margin: '0 0 18px',
-            letterSpacing: '-2px',
-            lineHeight: 1.04,
-            maxWidth: 800,
-          }}
-        >
-          {event.title}
-        </h1>
-
-        <p
-          style={{
-            color: 'rgba(255,255,255,0.68)',
-            fontSize: 16,
-            lineHeight: 1.85,
-            margin: '0 0 26px',
-            maxWidth: 760,
-          }}
-        >
-          Secure your place, review ticket options clearly, and complete your reservation through a simple and trusted flow.
-        </p>
-
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 12,
-            marginBottom: 28,
-            background: 'rgba(255,255,255,0.025)',
-            border: '1px solid rgba(255,255,255,0.07)',
-            borderRadius: 22,
-            padding: 20,
-            boxShadow: '0 18px 40px rgba(0,0,0,0.18)',
-          }}
-        >
-          <div className="meta-row" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <CalendarDays size={17} color="#60a5fa" />
-            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 15, margin: 0, lineHeight: 1.7 }}>
-              {fullDate} · {eventTime}
-            </p>
-          </div>
-
-          <div className="meta-row" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            <MapPin size={17} color="#60a5fa" />
-            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 15, margin: 0, lineHeight: 1.7 }}>{event.location}</p>
-
-            {event.location_url && (
-              <a
-                href={event.location_url}
-                target="_blank"
-                rel="noreferrer"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  background: 'rgba(46,117,182,0.1)',
-                  border: '1px solid rgba(46,117,182,0.28)',
-                  color: '#93c5fd',
-                  textDecoration: 'none',
-                  padding: '7px 14px',
-                  borderRadius: 10,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  letterSpacing: '1.2px',
-                }}
-              >
-                GET DIRECTIONS <ArrowRight size={12} />
-              </a>
-            )}
-          </div>
-        </div>
-
-        <TrustBadges />
-
-        <div
-          className="ticket-grid"
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-            gap: 16,
-            marginBottom: 32,
-          }}
-        >
-          {!noStanding && (
-            <TicketCard
-              label="STANDING"
-              info={standing}
-              onClick={scrollToBooking}
-              accent="#4ade80"
-              helper="Standard event access with the currently active wave price."
-            />
-          )}
-
-          {!noVip && (
-            <TicketCard
-              label="VIP"
-              info={vip}
-              onClick={scrollToBooking}
-              accent="#fbbf24"
-              helper="Priority tier with the currently active VIP wave."
-            />
-          )}
-
-          {!noBackstage && (
-            <TicketCard
-              label="BACKSTAGE"
-              info={backstage}
-              onClick={scrollToBooking}
-              accent="#a78bfa"
-              helper="Premium backstage access based on current availability."
-            />
-          )}
-        </div>
-
-        {event.description && (
-          <div
+        <div className="hero-shell">
+          <Link
+            href="/events"
             style={{
+              color: 'rgba(255,255,255,0.42)',
+              fontSize: 12,
+              letterSpacing: '2px',
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              marginBottom: 24,
+              padding: '9px 16px',
+              borderRadius: 12,
+              border: '1px solid rgba(255,255,255,0.06)',
               background: 'rgba(255,255,255,0.025)',
-              border: '1px solid rgba(46,117,182,0.1)',
-              borderRadius: 22,
-              padding: 26,
-              marginBottom: 26,
             }}
           >
-            <p
-              style={{
-                color: '#93c5fd',
-                fontSize: 11,
-                letterSpacing: '2px',
-                fontWeight: 700,
-                margin: '0 0 14px',
-              }}
-            >
-              ABOUT THIS EVENT
-            </p>
+            ← BACK TO EVENTS
+          </Link>
 
-            <p
-              style={{
-                color: 'rgba(255,255,255,0.68)',
-                fontSize: 15,
-                lineHeight: 1.95,
-                margin: 0,
-                whiteSpace: 'pre-wrap',
-              }}
-            >
-              {event.description}
-            </p>
-          </div>
-        )}
-
-        <div
-          className="rules-grid"
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: 16,
-            marginBottom: 28,
-          }}
-        >
-          <InfoCard
-            title="House Rules"
-            items={[
-              'Age policy and entry conditions may apply according to the event setup.',
-              'A valid ticket and a valid ID may be required at the gate.',
-              'Respect venue staff, security instructions, and entry organization.',
-              'Management reserves the right to refuse entry when necessary.',
-              'Outside prohibited items may not be allowed inside the venue.',
-            ]}
-          />
-
-          <InfoCard
-            title="Reservation Rules"
-            items={[
-              'Your booking is only confirmed after payment review and approval.',
-              'Pending reservations must be completed within the allowed payment window.',
-              'If payment is not completed in time, the reservation may be canceled automatically.',
-              'QR access appears in your profile after confirmation.',
-              'Support and booking follow-up are handled through your profile and Instagram support.',
-            ]}
-          />
-        </div>
-
-        <div id="book-now-section">
-          {event.is_finished ? (
-            <div
-              style={{
-                background: 'rgba(255,255,255,0.025)',
-                border: '1px solid rgba(255,255,255,0.06)',
-                borderRadius: 22,
-                padding: 36,
-                textAlign: 'center',
-              }}
-            >
-              <p style={{ fontSize: 40, margin: '0 0 12px' }}>🏁</p>
-              <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, letterSpacing: '2px', fontWeight: 700, margin: '0 0 10px' }}>
-                THIS EVENT HAS ENDED
-              </p>
-              <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 14, margin: 0, lineHeight: 1.7 }}>
-                Booking is no longer available for this event.
-              </p>
-            </div>
-          ) : !event.is_active ? (
-            <div
-              style={{
-                background: 'rgba(255,255,255,0.025)',
-                border: '1px solid rgba(255,255,255,0.06)',
-                borderRadius: 22,
-                padding: 36,
-                textAlign: 'center',
-              }}
-            >
-              <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, letterSpacing: '2px', fontWeight: 700, margin: '0 0 10px' }}>
-                BOOKINGS NOT OPEN YET
-              </p>
-              <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 14, margin: 0, lineHeight: 1.7 }}>
-                This event is not accepting reservations at the moment.
-              </p>
-            </div>
-          ) : allSoldOut ? (
-            <div
-              style={{
-                background: 'rgba(239,68,68,0.05)',
-                border: '1px solid rgba(239,68,68,0.22)',
-                borderRadius: 22,
-                padding: 36,
-                textAlign: 'center',
-              }}
-            >
-              <p style={{ fontSize: 40, margin: '0 0 12px' }}>❌</p>
-              <p style={{ color: '#ef4444', fontSize: 13, letterSpacing: '2px', fontWeight: 700, margin: '0 0 10px' }}>
-                ALL TICKETS ARE SOLD OUT
-              </p>
-              <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 14, margin: 0, lineHeight: 1.7 }}>
-                No available tickets remain for this event.
-              </p>
-            </div>
-          ) : !user ? (
-            <div
-              style={{
-                background: 'rgba(255,255,255,0.025)',
-                border: '1px solid rgba(46,117,182,0.12)',
-                borderRadius: 22,
-                padding: 36,
-                textAlign: 'center',
-              }}
-            >
-              <p style={{ color: 'rgba(255,255,255,0.72)', fontSize: 16, margin: '0 0 12px', fontWeight: 700 }}>
-                Login required to continue booking
-              </p>
-              <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 14, margin: '0 0 22px', lineHeight: 1.75 }}>
-                Sign in first, then continue to your reservation details and payment steps.
-              </p>
-
-              <Link
-                href={bookingHref}
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 18 }}>
+            {event.is_finished && (
+              <span
                 style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 8,
-                  background: 'linear-gradient(135deg, #1A3C5E, #2E75B6)',
-                  color: '#fff',
-                  textDecoration: 'none',
-                  padding: '15px 30px',
-                  borderRadius: 14,
-                  fontWeight: 800,
-                  fontSize: 14,
-                  letterSpacing: '1.6px',
-                  boxShadow: '0 10px 28px rgba(46,117,182,0.3)',
+                  background: 'rgba(100,100,100,0.15)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  color: 'rgba(255,255,255,0.42)',
+                  padding: '6px 16px',
+                  borderRadius: 999,
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: '2px',
                 }}
               >
-                LOGIN TO BOOK <ArrowRight size={16} />
-              </Link>
+                EVENT ENDED
+              </span>
+            )}
+
+            {allSoldOut && !event.is_finished && (
+              <span
+                style={{
+                  background: 'rgba(239,68,68,0.1)',
+                  border: '1px solid rgba(239,68,68,0.35)',
+                  color: '#ef4444',
+                  padding: '6px 16px',
+                  borderRadius: 999,
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: '2px',
+                }}
+              >
+                SOLD OUT
+              </span>
+            )}
+
+            {!event.is_finished && event.is_active && !allSoldOut && (
+              <span
+                style={{
+                  background: 'rgba(34,197,94,0.1)',
+                  border: '1px solid rgba(34,197,94,0.3)',
+                  color: '#4ade80',
+                  padding: '6px 16px',
+                  borderRadius: 999,
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: '2px',
+                }}
+              >
+                BOOKING OPEN
+              </span>
+            )}
+          </div>
+
+          <h1
+            className="event-title"
+            style={{
+              fontFamily: 'Poppins, sans-serif',
+              fontSize: 'clamp(34px, 5vw, 58px)',
+              fontWeight: 900,
+              color: '#fff',
+              margin: '0 0 18px',
+              letterSpacing: '-2px',
+              lineHeight: 1.04,
+              maxWidth: 820,
+            }}
+          >
+            {event.title}
+          </h1>
+
+          <p
+            style={{
+              color: 'rgba(255,255,255,0.68)',
+              fontSize: 16,
+              lineHeight: 1.85,
+              margin: '0 0 26px',
+              maxWidth: 760,
+            }}
+          >
+            Secure your place, review ticket options clearly, and complete your reservation through a simple and trusted flow.
+          </p>
+
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 12,
+              marginBottom: 28,
+              background: 'rgba(255,255,255,0.025)',
+              border: '1px solid rgba(255,255,255,0.07)',
+              borderRadius: 22,
+              padding: 20,
+              boxShadow: '0 18px 40px rgba(0,0,0,0.18)',
+            }}
+          >
+            <div className="meta-row" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <CalendarDays size={17} color="#60a5fa" />
+              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 15, margin: 0, lineHeight: 1.7 }}>
+                {fullDate} · {eventTime}
+              </p>
             </div>
-          ) : (
+
+            <div className="meta-row" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <MapPin size={17} color="#60a5fa" />
+              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 15, margin: 0, lineHeight: 1.7 }}>{event.location}</p>
+
+              {event.location_url && (
+                <a
+                  href={event.location_url}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    background: 'rgba(46,117,182,0.1)',
+                    border: '1px solid rgba(46,117,182,0.28)',
+                    color: '#93c5fd',
+                    textDecoration: 'none',
+                    padding: '7px 14px',
+                    borderRadius: 10,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    letterSpacing: '1.2px',
+                  }}
+                >
+                  GET DIRECTIONS <ArrowRight size={12} />
+                </a>
+              )}
+            </div>
+          </div>
+
+          <TrustBadges />
+
+          <div className="ticket-grid">
+            {!noStanding && (
+              <TicketCard
+                label="STANDING"
+                info={standing}
+                onClick={scrollToBooking}
+                accent="#4ade80"
+                helper="Standard event access with the currently active wave price."
+              />
+            )}
+
+            {!noVip && (
+              <TicketCard
+                label="VIP"
+                info={vip}
+                onClick={scrollToBooking}
+                accent="#fbbf24"
+                helper="Priority tier with the currently active VIP wave."
+              />
+            )}
+
+            {!noBackstage && (
+              <TicketCard
+                label="BACKSTAGE"
+                info={backstage}
+                onClick={scrollToBooking}
+                accent="#a78bfa"
+                helper="Premium backstage access based on current availability."
+              />
+            )}
+          </div>
+
+          {event.description && (
             <div
               style={{
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(46,117,182,0.16)',
+                background: 'rgba(255,255,255,0.025)',
+                border: '1px solid rgba(46,117,182,0.1)',
                 borderRadius: 22,
                 padding: 26,
-                boxShadow: '0 18px 36px rgba(0,0,0,0.18)',
+                marginBottom: 26,
               }}
             >
-              <p style={{ color: '#93c5fd', fontSize: 11, letterSpacing: '2px', fontWeight: 700, margin: '0 0 10px' }}>
-                READY TO BOOK
-              </p>
-              <h2
+              <p
                 style={{
-                  color: '#fff',
-                  fontFamily: 'Poppins, sans-serif',
-                  fontSize: 26,
-                  margin: '0 0 10px',
-                  lineHeight: 1.2,
+                  color: '#93c5fd',
+                  fontSize: 11,
+                  letterSpacing: '2px',
+                  fontWeight: 700,
+                  margin: '0 0 14px',
                 }}
               >
-                Continue to your booking form
-              </h2>
-              <p style={{ color: 'rgba(255,255,255,0.62)', fontSize: 15, margin: '0 0 18px', lineHeight: 1.8 }}>
-                Your reservation will be created as pending first, then you can follow payment instructions from your profile.
+                ABOUT THIS EVENT
               </p>
 
-              <Link
-                href={bookingHref}
+              <p
                 style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 8,
-                  textAlign: 'center',
-                  background: 'linear-gradient(135deg, #1A3C5E, #2E75B6)',
-                  color: '#fff',
-                  textDecoration: 'none',
-                  padding: '16px 28px',
-                  borderRadius: 16,
-                  fontFamily: 'Poppins, sans-serif',
-                  fontWeight: 900,
+                  color: 'rgba(255,255,255,0.68)',
                   fontSize: 15,
-                  letterSpacing: '1.8px',
-                  boxShadow: '0 12px 30px rgba(46,117,182,0.32)',
+                  lineHeight: 1.95,
+                  margin: 0,
+                  whiteSpace: 'pre-wrap',
                 }}
               >
-                BOOK MY SPOT <ArrowRight size={16} />
-              </Link>
+                {event.description}
+              </p>
             </div>
           )}
+
+          <div className="rules-grid">
+            <InfoCard
+              title="House Rules"
+              items={[
+                'Age policy and entry conditions may apply according to the event setup.',
+                'A valid ticket and a valid ID may be required at the gate.',
+                'Respect venue staff, security instructions, and entry organization.',
+                'Management reserves the right to refuse entry when necessary.',
+                'Outside prohibited items may not be allowed inside the venue.',
+              ]}
+            />
+
+            <InfoCard
+              title="Reservation Rules"
+              items={[
+                'Your booking is only confirmed after payment review and approval.',
+                'Pending reservations must be completed within the allowed payment window.',
+                'If payment is not completed in time, the reservation may be canceled automatically.',
+                'QR access appears in your profile after confirmation.',
+                'Support and booking follow-up are handled through your profile and Instagram support.',
+              ]}
+            />
+          </div>
+
+          <div id="book-now-section">
+            {event.is_finished ? (
+              <StateCard
+                emoji="🏁"
+                title="THIS EVENT HAS ENDED"
+                desc="Booking is no longer available for this event."
+                titleColor="rgba(255,255,255,0.42)"
+                bg="rgba(255,255,255,0.025)"
+                border="1px solid rgba(255,255,255,0.06)"
+              />
+            ) : !event.is_active ? (
+              <StateCard
+                title="BOOKINGS NOT OPEN YET"
+                desc="This event is not accepting reservations at the moment."
+                titleColor="rgba(255,255,255,0.42)"
+                bg="rgba(255,255,255,0.025)"
+                border="1px solid rgba(255,255,255,0.06)"
+              />
+            ) : allSoldOut ? (
+              <StateCard
+                emoji="❌"
+                title="ALL TICKETS ARE SOLD OUT"
+                desc="No available tickets remain for this event."
+                titleColor="#ef4444"
+                bg="rgba(239,68,68,0.05)"
+                border="1px solid rgba(239,68,68,0.22)"
+              />
+            ) : !user ? (
+              <div
+                style={{
+                  background: 'rgba(255,255,255,0.025)',
+                  border: '1px solid rgba(46,117,182,0.12)',
+                  borderRadius: 22,
+                  padding: 36,
+                  textAlign: 'center',
+                }}
+              >
+                <p style={{ color: 'rgba(255,255,255,0.72)', fontSize: 16, margin: '0 0 12px', fontWeight: 700 }}>
+                  Login required to continue booking
+                </p>
+                <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 14, margin: '0 0 22px', lineHeight: 1.75 }}>
+                  Sign in first, then continue to your reservation details and payment steps.
+                </p>
+
+                <Link
+                  href={bookingHref}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8,
+                    background: 'linear-gradient(135deg, #1A3C5E, #2E75B6)',
+                    color: '#fff',
+                    textDecoration: 'none',
+                    padding: '15px 30px',
+                    borderRadius: 14,
+                    fontWeight: 800,
+                    fontSize: 14,
+                    letterSpacing: '1.6px',
+                    boxShadow: '0 10px 28px rgba(46,117,182,0.3)',
+                  }}
+                >
+                  LOGIN TO BOOK <ArrowRight size={16} />
+                </Link>
+              </div>
+            ) : (
+              <div
+                style={{
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(46,117,182,0.16)',
+                  borderRadius: 22,
+                  padding: 26,
+                  boxShadow: '0 18px 36px rgba(0,0,0,0.18)',
+                }}
+              >
+                <p style={{ color: '#93c5fd', fontSize: 11, letterSpacing: '2px', fontWeight: 700, margin: '0 0 10px' }}>
+                  READY TO BOOK
+                </p>
+                <h2
+                  style={{
+                    color: '#fff',
+                    fontFamily: 'Poppins, sans-serif',
+                    fontSize: 26,
+                    margin: '0 0 10px',
+                    lineHeight: 1.2,
+                  }}
+                >
+                  Continue to your booking form
+                </h2>
+                <p style={{ color: 'rgba(255,255,255,0.62)', fontSize: 15, margin: '0 0 18px', lineHeight: 1.8 }}>
+                  Your reservation will be created as pending first, then you can follow payment instructions from your profile.
+                </p>
+
+                <Link
+                  href={bookingHref}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8,
+                    textAlign: 'center',
+                    background: 'linear-gradient(135deg, #1A3C5E, #2E75B6)',
+                    color: '#fff',
+                    textDecoration: 'none',
+                    padding: '16px 28px',
+                    borderRadius: 16,
+                    fontFamily: 'Poppins, sans-serif',
+                    fontWeight: 900,
+                    fontSize: 15,
+                    letterSpacing: '1.8px',
+                    boxShadow: '0 12px 30px rgba(46,117,182,0.32)',
+                  }}
+                >
+                  BOOK MY SPOT <ArrowRight size={16} />
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -1135,5 +1128,41 @@ export default function EventPage() {
         </div>
       )}
     </main>
+  )
+}
+
+function StateCard({
+  emoji,
+  title,
+  desc,
+  titleColor,
+  bg,
+  border,
+}: {
+  emoji?: string
+  title: string
+  desc: string
+  titleColor: string
+  bg: string
+  border: string
+}) {
+  return (
+    <div
+      style={{
+        background: bg,
+        border,
+        borderRadius: 22,
+        padding: 36,
+        textAlign: 'center',
+      }}
+    >
+      {emoji ? <p style={{ fontSize: 40, margin: '0 0 12px' }}>{emoji}</p> : null}
+      <p style={{ color: titleColor, fontSize: 13, letterSpacing: '2px', fontWeight: 700, margin: '0 0 10px' }}>
+        {title}
+      </p>
+      <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 14, margin: 0, lineHeight: 1.7 }}>
+        {desc}
+      </p>
+    </div>
   )
 }
