@@ -703,60 +703,7 @@ export default function EventSummaryPage() {
           ))}
         </div>
 
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-            gap: '12px',
-            marginBottom: '32px',
-          }}
-        >
-          {[
-            {
-              label: 'SINGLE · WAVES',
-              color: '#60a5fa',
-              text: `W1: ${counts.single_wave_1} · W2: ${counts.single_wave_2} · W3: ${counts.single_wave_3}`,
-            },
-            {
-              label: 'STANDING · WAVES',
-              color: '#22c55e',
-              text: `W1: ${counts.standing_wave_1} · W2: ${counts.standing_wave_2} · W3: ${counts.standing_wave_3}`,
-            },
-            {
-              label: 'BACKSTAGE · WAVES',
-              color: '#a855f7',
-              text: `W1: ${counts.backstage_wave_1} · W2: ${counts.backstage_wave_2} · W3: ${counts.backstage_wave_3}`,
-            },
-            {
-              label: 'VIP · WAVES',
-              color: '#fbbf24',
-              text: `W1: ${counts.vip_wave_1} · W2: ${counts.vip_wave_2} · W3: ${counts.vip_wave_3}`,
-            },
-          ].map(item => (
-            <div
-              key={item.label}
-              style={{
-                backgroundColor: '#0d1528',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: '14px',
-                padding: '16px',
-              }}
-            >
-              <p
-                style={{
-                  color: 'rgba(255,255,255,0.42)',
-                  fontSize: '10px',
-                  letterSpacing: '2px',
-                  fontWeight: 700,
-                  margin: '0 0 10px',
-                }}
-              >
-                {item.label}
-              </p>
-              <p style={{ color: item.color, fontSize: '13px', margin: 0, fontWeight: 700 }}>{item.text}</p>
-            </div>
-          ))}
-        </div>
+    
 
         <div
           style={{
