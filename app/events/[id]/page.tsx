@@ -12,6 +12,7 @@ import {
   MapPin,
   ArrowRight,
   ChevronDown,
+  UserCircle2,
 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
@@ -395,6 +396,19 @@ export default function EventPage() {
     }
 
     load()
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      setUser(user)
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [id])
 
   const scrollToBooking = () => {
@@ -690,9 +704,9 @@ export default function EventPage() {
         <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
           <div
             style={{
-              width: 34,
-              height: 34,
-              borderRadius: 10,
+              width: 36,
+              height: 36,
+              borderRadius: 12,
               background: 'linear-gradient(135deg, #1A3C5E, #2E75B6)',
               display: 'flex',
               alignItems: 'center',
@@ -700,10 +714,10 @@ export default function EventPage() {
               boxShadow: '0 10px 24px rgba(46,117,182,0.28)',
             }}
           >
-            <QrCode size={16} color="#fff" />
+            <QrCode size={17} color="#fff" />
           </div>
 
-          <span style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 19, color: '#fff' }}>
+          <span style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 800, fontSize: 19, color: '#fff' }}>
             Ticket<span style={{ color: '#60a5fa' }}>Hub</span>
           </span>
         </Link>
@@ -718,12 +732,64 @@ export default function EventPage() {
           <Link href="/#contact" style={{ color: 'rgba(255,255,255,0.64)', textDecoration: 'none', fontSize: 14, padding: '8px 14px' }}>
             Contact
           </Link>
-          <Link href="/auth/login" style={{ color: 'rgba(255,255,255,0.78)', textDecoration: 'none', fontSize: 14, fontWeight: 600, padding: '8px 18px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', marginLeft: 12 }}>
-            Login
-          </Link>
-          <Link href="/auth/register" style={{ color: '#fff', textDecoration: 'none', fontSize: 14, fontWeight: 600, padding: '9px 20px', borderRadius: 10, background: 'linear-gradient(135deg, #1A3C5E, #2E75B6)', marginLeft: 4 }}>
-            Sign Up
-          </Link>
+
+          {user ? (
+            <Link
+              href="/profile"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                color: '#fff',
+                textDecoration: 'none',
+                fontSize: 13,
+                fontWeight: 700,
+                padding: '9px 16px',
+                borderRadius: 12,
+                marginLeft: 12,
+                background: 'rgba(46,117,182,0.12)',
+                border: '1px solid rgba(46,117,182,0.24)',
+                boxShadow: '0 8px 20px rgba(46,117,182,0.14)',
+              }}
+            >
+              <UserCircle2 size={17} />
+              Profile
+            </Link>
+          ) : (
+            <>
+              <Link
+                href="/auth/login"
+                style={{
+                  color: 'rgba(255,255,255,0.78)',
+                  textDecoration: 'none',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  padding: '8px 18px',
+                  borderRadius: 8,
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  marginLeft: 12,
+                }}
+              >
+                Login
+              </Link>
+
+              <Link
+                href="/auth/register"
+                style={{
+                  color: '#fff',
+                  textDecoration: 'none',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  padding: '9px 20px',
+                  borderRadius: 10,
+                  background: 'linear-gradient(135deg, #1A3C5E, #2E75B6)',
+                  marginLeft: 4,
+                }}
+              >
+                Sign Up
+              </Link>
+            </>
+          )}
         </div>
       </nav>
 
