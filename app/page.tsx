@@ -96,23 +96,19 @@ export default function HomePage() {
           justify-content: center;
           margin-bottom: 22px;
           flex-wrap: wrap;
-        }
+      .event-img-wrap {
+  position: relative;
+  width: 100%;
+  background: linear-gradient(135deg, #0d1528, #1A3C5E);
+  flex-shrink: 0;
+}
 
-        .event-img-wrap {
-          position: relative;
-          width: 100%;
-          aspect-ratio: 16 / 10;
-          background: linear-gradient(135deg, #0d1528, #1A3C5E);
-          flex-shrink: 0;
-          overflow: hidden;
-        }
-
-        .event-img-wrap img {
-          width: 100%;
-          height: auto;
-          display: block;
-          object-fit: unset;
-        }
+.event-img-wrap img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: unset;
+}
 
         @media (max-width: 768px) {
           .hero-title {
