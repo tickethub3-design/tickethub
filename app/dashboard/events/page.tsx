@@ -893,6 +893,23 @@ export default function DashboardEvents() {
                   </button>
 
                   <button
+                    onClick={() => router.push(`/dashboard/events/${event.id}/guest-list`)}
+                    style={{
+                      background: 'rgba(96,165,250,0.08)',
+                      border: '1px solid rgba(96,165,250,0.25)',
+                      color: '#60a5fa',
+                      padding: '7px 14px',
+                      borderRadius: 8,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      fontFamily: 'Inter, sans-serif',
+                    }}
+                  >
+                    Guest List
+                  </button>
+
+                  <button
                     onClick={() => handleEdit(event)}
                     style={{
                       background: 'rgba(46,117,182,0.08)',
