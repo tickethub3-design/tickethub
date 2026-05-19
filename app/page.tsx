@@ -109,9 +109,9 @@ export default function HomePage() {
 
         .event-img-wrap img {
           width: 100%;
-          height: 100%;
+          height: auto;
           display: block;
-          object-fit: cover;
+          object-fit: unset;
         }
 
         @media (max-width: 768px) {
