@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import TopBar from '@/app/components/TopBar'
+import Footer from '@/app/components/Footer'
 
 const roleAccess: Record<string, string[]> = {
   admin: ['events', 'reservations', 'verify', 'users'],
@@ -96,87 +98,10 @@ export default function DashboardPage() {
   ]
 
   return (
-    <main style={{ minHeight: '100vh', backgroundColor: '#0a0f1e', padding: 0, fontFamily: 'Inter, sans-serif' }}>
-      {/* TOPBAR */}
-      <div
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 100,
-          background: 'rgba(10,15,30,0.95)',
-          backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(46,117,182,0.12)',
-          padding: '0 32px',
-          height: 64,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 9,
-              background: 'linear-gradient(135deg, #1A3C5E, #2E75B6)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 14,
-            }}
-          >
-            🎟️
-          </div>
-          <span style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 17, color: '#fff' }}>
-            Ticket<span style={{ color: '#2E75B6' }}>Hub</span>
-            <span style={{ color: 'rgba(255,255,255,0.3)', fontWeight: 400, fontSize: 13 }}> / Dashboard</span>
-          </span>
-        </div>
+    <main style={{ minHeight: '100vh', backgroundColor: '#0a0f1e', padding: 0, fontFamily: 'Inter, sans-serif', display: 'flex', flexDirection: 'column' }}>
+      <TopBar title="Dashboard" role={role} roleBadgeColor={badge} username={username} onLogout={logout} />
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13 }}>👋 {username}</span>
-
-          {role && (
-            <span
-              style={{
-                background: badge.bg,
-                border: `1px solid ${badge.color}40`,
-                color: badge.color,
-                fontSize: 10,
-                fontWeight: 700,
-                letterSpacing: '1.5px',
-                padding: '3px 10px',
-                borderRadius: 50,
-              }}
-            >
-              {role.toUpperCase()}
-            </span>
-          )}
-
-          <button
-            onClick={logout}
-            style={{
-              background: 'rgba(231,76,60,0.08)',
-              border: '1px solid rgba(231,76,60,0.2)',
-              color: '#E74C3C',
-              padding: '7px 16px',
-              borderRadius: 8,
-              cursor: 'pointer',
-              fontSize: 12,
-              fontWeight: 600,
-              fontFamily: 'Inter, sans-serif',
-              marginLeft: 4,
-            }}
-          >
-            Logout
-          </button>
-        </div>
-      </div>
-
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '96px 24px 80px' }}>
+      <div style={{ flex: 1, maxWidth: 1200, margin: '0 auto', width: '100%', padding: '96px 24px 80px' }}>
         {/* PAGE TITLE */}
         <div style={{ marginBottom: 40 }}>
           <span style={{ color: '#2E75B6', fontSize: 11, fontWeight: 700, letterSpacing: '2.5px' }}>OVERVIEW</span>
@@ -382,6 +307,8 @@ export default function DashboardPage() {
           ))}
         </div>
       </div>
+
+      <Footer />
     </main>
   )
 }

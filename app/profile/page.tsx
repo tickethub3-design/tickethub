@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Footer from '@/app/components/Footer'
 
 function Countdown({ deadline }: { deadline: string }) {
   const [time, setTime] = useState('')
@@ -371,6 +372,8 @@ export default function ProfilePage() {
           )
         })}
       </div>
+
+      <Footer />
     </main>
   )
 }

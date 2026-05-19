@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
+import Navbar from '@/app/components/Navbar'
+import Footer from '@/app/components/Footer'
 
 type Event = {
   id: string
@@ -18,8 +20,8 @@ type Event = {
 
 export default function EventsPage() {
   const [upcoming, setUpcoming] = useState<Event[]>([])
-  const [past, setPast]         = useState<Event[]>([])
-  const [loading, setLoading]   = useState(true)
+  const [past, setPast] = useState<Event[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     Promise.all([
@@ -33,8 +35,7 @@ export default function EventsPage() {
   }, [])
 
   return (
-    <main style={{ backgroundColor: '#0a0f1e', minHeight: '100vh', fontFamily: 'Inter, sans-serif' }}>
-
+    <main style={{ backgroundColor: '#0a0f1e', minHeight: '100vh', fontFamily: 'Inter, sans-serif', display: 'flex', flexDirection: 'column' }}>
       <style>{`
         .event-img-wrap {
           position: relative;
@@ -49,22 +50,7 @@ export default function EventsPage() {
         }
       `}</style>
 
-      {/* NAVBAR */}
-      <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, background: 'rgba(10,15,30,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(46,117,182,0.12)', padding: '0 40px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Link href="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 34, height: 34, borderRadius: 9, background: 'linear-gradient(135deg, #1A3C5E, #2E75B6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15 }}>🎟️</div>
-          <span style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 19, color: '#fff' }}>
-            Ticket<span style={{ color: '#2E75B6' }}>Hub</span>
-          </span>
-        </Link>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <Link href="/events"        style={{ color: '#fff', textDecoration: 'none', fontSize: 14, padding: '8px 14px', borderRadius: 8, background: 'rgba(46,117,182,0.15)', fontWeight: 600 }}>Events</Link>
-          <Link href="/#about"        style={{ color: 'rgba(255,255,255,0.55)', textDecoration: 'none', fontSize: 14, padding: '8px 14px' }}>About</Link>
-          <Link href="/#contact"      style={{ color: 'rgba(255,255,255,0.55)', textDecoration: 'none', fontSize: 14, padding: '8px 14px' }}>Contact</Link>
-          <Link href="/auth/login"    style={{ color: 'rgba(255,255,255,0.75)', textDecoration: 'none', fontSize: 14, fontWeight: 600, padding: '8px 18px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', marginLeft: 12 }}>Login</Link>
-          <Link href="/auth/register" style={{ color: '#fff', textDecoration: 'none', fontSize: 14, fontWeight: 600, padding: '9px 20px', borderRadius: 8, background: 'linear-gradient(135deg, #1A3C5E, #2E75B6)', marginLeft: 4 }}>Sign Up</Link>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* HEADER */}
       <section style={{ paddingTop: 130, paddingBottom: 60, paddingLeft: 24, paddingRight: 24, textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
@@ -76,13 +62,13 @@ export default function EventsPage() {
           <h1 style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 800, fontSize: 'clamp(32px, 5vw, 52px)', color: '#fff', margin: '12px 0 16px', letterSpacing: '-1.5px' }}>
             Find Your Next Experience
           </h1>
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 16, margin: 0 }}>
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 'clamp(14px, 2vw, 16px)', margin: 0 }}>
             Browse all upcoming events and book your tickets
           </p>
         </div>
       </section>
 
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px 100px' }}>
+      <div style={{ flex: 1, maxWidth: 1200, margin: '0 auto', width: '100%', padding: '0 24px 60px' }}>
 
         {/* UPCOMING */}
         {upcoming.length > 0 && (
@@ -119,6 +105,8 @@ export default function EventsPage() {
           </div>
         )}
       </div>
+
+      <Footer />
     </main>
   )
 }

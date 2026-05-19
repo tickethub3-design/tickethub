@@ -226,6 +226,7 @@ export default function Navbar() {
         @media (max-width: 640px) {
           .nav-desktop { display: none !important; }
           .nav-hamburger { display: flex !important; }
+          .logo-text { font-size: 16px !important; }
         }
 
         .mobile-menu {
@@ -307,6 +308,7 @@ export default function Navbar() {
             </div>
 
             <span
+              className="logo-text"
               style={{
                 fontFamily: 'Poppins, sans-serif',
                 fontWeight: 700,

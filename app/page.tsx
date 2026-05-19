@@ -243,17 +243,17 @@ export default function HomePage() {
             background: 'rgba(255,255,255,0.025)',
             border: '1px solid rgba(255,255,255,0.07)',
             borderRadius: 24,
-            padding: '20px',
+            padding: '28px 24px',
             boxShadow: '0 18px 44px rgba(0,0,0,0.18)',
           }}
         >
-          <div className="trust-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
+          <div className="trust-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12, marginBottom: 24 }}>
             {[
-              { title: 'Secure Booking', sub: 'Safe reservation flow' },
-              { title: 'Official Tickets', sub: 'Verified event access' },
-              { title: 'QR Entry', sub: 'Fast gate scanning' },
-              { title: 'Easy Support', sub: 'Instagram assistance' },
-              { title: 'Trusted Experience', sub: 'Clear booking journey' },
+              { title: 'Secure Booking', sub: 'PCI-DSS compliant payments' },
+              { title: 'Official Tickets', sub: 'Verified & authenticated' },
+              { title: 'QR Gate Entry', sub: 'Instant verification' },
+              { title: 'Live Support', sub: 'Rapid assistance available' },
+              { title: 'Trusted Platform', sub: 'Verified by 5K+ users' },
             ].map(item => (
               <div
                 key={item.title}
@@ -261,32 +261,59 @@ export default function HomePage() {
                   background: 'rgba(255,255,255,0.02)',
                   border: '1px solid rgba(255,255,255,0.05)',
                   borderRadius: 18,
-                  padding: '18px 16px',
+                  padding: '22px 18px',
                   textAlign: 'center',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={e => {
+                  const el = e.currentTarget as HTMLDivElement
+                  el.style.background = 'rgba(46,117,182,0.04)'
+                  el.style.borderColor = 'rgba(46,117,182,0.2)'
+                }}
+                onMouseLeave={e => {
+                  const el = e.currentTarget as HTMLDivElement
+                  el.style.background = 'rgba(255,255,255,0.02)'
+                  el.style.borderColor = 'rgba(255,255,255,0.05)'
                 }}
               >
                 <div
                   style={{
-                    width: 36,
-                    height: 36,
+                    width: 42,
+                    height: 42,
                     borderRadius: 12,
-                    margin: '0 auto 12px',
-                    background: 'rgba(46,117,182,0.12)',
-                    border: '1px solid rgba(46,117,182,0.2)',
+                    margin: '0 auto 14px',
+                    background: 'linear-gradient(135deg, rgba(46,117,182,0.15), rgba(96,165,250,0.08))',
+                    border: '1.5px solid rgba(46,117,182,0.25)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     color: '#60a5fa',
-                    fontSize: 16,
+                    fontSize: 18,
                     fontWeight: 700,
                   }}
                 >
                   ✓
                 </div>
                 <div style={{ color: '#fff', fontSize: 14, fontWeight: 700, marginBottom: 6 }}>{item.title}</div>
-                <div style={{ color: 'rgba(255,255,255,0.48)', fontSize: 12, lineHeight: 1.6 }}>{item.sub}</div>
+                <div style={{ color: 'rgba(255,255,255,0.52)', fontSize: 12.5, lineHeight: 1.6 }}>{item.sub}</div>
               </div>
             ))}
+          </div>
+
+          {/* Trust Indicators Row */}
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: 20, display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap', fontSize: 13 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'rgba(255,255,255,0.6)' }}>
+              <span style={{ fontSize: 18 }}>🔒</span>
+              <span>256-bit SSL Encrypted</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'rgba(255,255,255,0.6)' }}>
+              <span style={{ fontSize: 18 }}>✅</span>
+              <span>Verified by 5,000+ Users</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'rgba(255,255,255,0.6)' }}>
+              <span style={{ fontSize: 18 }}>⭐</span>
+              <span>4.8/5 Platform Rating</span>
+            </div>
           </div>
         </div>
       </section>
