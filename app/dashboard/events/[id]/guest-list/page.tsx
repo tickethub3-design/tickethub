@@ -10,6 +10,9 @@ type GuestTicket = {
   full_name: string
   phone: string
   instagram: string | null
+  holder_name?: string | null
+  holder_phone?: string | null
+  holder_instagram?: string | null
   ticket_type: string
   price_paid: number | null
   status: string | null
@@ -70,7 +73,7 @@ export default function GuestListPage() {
         supabase
           .from('tickets')
           .select(
-            'id,event_id,full_name,phone,instagram,ticket_type,price_paid,status,payment_status,qr_code,is_guest_list,created_at'
+            'id,event_id,full_name,phone,instagram,holder_name,holder_phone,holder_instagram,ticket_type,price_paid,status,payment_status,qr_code,is_guest_list,created_at'
           )
           .eq('event_id', eventId)
           .eq('ticket_type', 'guest')
@@ -124,12 +127,16 @@ export default function GuestListPage() {
       return
     }
 
-    if (!name.trim() || !phone.trim() || !instagram.trim()) {
+    const cleanName = name.trim()
+    const cleanPhone = phone.trim()
+    const cleanInstagram = instagram.trim()
+
+    if (!cleanName || !cleanPhone || !cleanInstagram) {
       setError('Please fill name, phone number, and Instagram URL.')
       return
     }
 
-    if (!isValidInstagramUrl(instagram.trim())) {
+    if (!isValidInstagramUrl(cleanInstagram)) {
       setError('Please enter a valid Instagram URL.')
       return
     }
@@ -140,9 +147,12 @@ export default function GuestListPage() {
       const { error: updateError } = await supabase
         .from('tickets')
         .update({
-          full_name: name.trim(),
-          phone: phone.trim(),
-          instagram: instagram.trim(),
+          full_name: cleanName,
+          phone: cleanPhone,
+          instagram: cleanInstagram,
+          holder_name: cleanName,
+          holder_phone: cleanPhone,
+          holder_instagram: cleanInstagram,
         })
         .eq('id', editingId)
         .select()
@@ -161,15 +171,21 @@ export default function GuestListPage() {
         .from('tickets')
         .insert({
           event_id: eventId,
-          full_name: name.trim(),
-          phone: phone.trim(),
-          instagram: instagram.trim(),
+          full_name: cleanName,
+          phone: cleanPhone,
+          instagram: cleanInstagram,
+
+          holder_name: cleanName,
+          holder_phone: cleanPhone,
+          holder_instagram: cleanInstagram,
+
           ticket_type: 'guest',
           price_paid: 0,
           payment_status: 'free',
           status: 'active',
           is_guest_list: true,
           qr_code: qr,
+          checked_in: false,
         })
         .select()
 
@@ -191,9 +207,9 @@ export default function GuestListPage() {
 
   const handleEdit = (ticket: GuestTicket) => {
     setEditingId(ticket.id)
-    setName(ticket.full_name || '')
-    setPhone(ticket.phone || '')
-    setInstagram(ticket.instagram || '')
+    setName(ticket.holder_name || ticket.full_name || '')
+    setPhone(ticket.holder_phone || ticket.phone || '')
+    setInstagram(ticket.holder_instagram || ticket.instagram || '')
 
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -554,7 +570,7 @@ export default function GuestListPage() {
                 <div style={{ flex: 1, minWidth: 240 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 8 }}>
                     <h3 style={{ color: '#fff', fontSize: 16, fontWeight: 800, margin: 0, fontFamily: 'Poppins, sans-serif' }}>
-                      {ticket.full_name}
+                      {ticket.holder_name || ticket.full_name}
                     </h3>
 
                     <span
@@ -591,10 +607,10 @@ export default function GuestListPage() {
                   </div>
 
                   <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13, margin: '0 0 5px' }}>
-                    📞 {ticket.phone}
+                    📞 {ticket.holder_phone || ticket.phone}
                   </p>
                   <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13, margin: '0 0 5px', wordBreak: 'break-word' }}>
-                    Instagram: {ticket.instagram || '-'}
+                    Instagram: {ticket.holder_instagram || ticket.instagram || '-'}
                   </p>
                   <p style={{ color: '#86efac', fontSize: 13, fontWeight: 700, margin: '0 0 5px' }}>
                     Price: {ticket.price_paid ?? 0} EGP
