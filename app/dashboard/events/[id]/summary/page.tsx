@@ -661,7 +661,6 @@ export default function EventSummaryPage() {
           {[
             { label: 'CONFIRMED BOOKINGS', value: reservations.length, color: '#fff', border: '#1a1a1a' },
             { label: 'GUEST TICKETS', value: counts.guest, color: '#60a5fa', border: 'rgba(96,165,250,0.35)' },
-            { label: 'TOTAL ATTENDEES', value: allTicketsCount, color: '#fff', border: '#1a1a1a' },
             { label: 'SINGLE', value: counts.single, color: '#60a5fa', border: 'rgba(96,165,250,0.35)' },
             { label: 'STANDING', value: counts.standing, color: '#22c55e', border: 'rgba(34,197,94,0.35)' },
             { label: 'BACKSTAGE', value: counts.backstage, color: '#a855f7', border: 'rgba(168,85,247,0.35)' },
