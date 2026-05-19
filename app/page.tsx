@@ -38,34 +38,105 @@ export default function HomePage() {
   return (
     <main style={{ backgroundColor: '#0a0f1e', minHeight: '100vh', fontFamily: 'Inter, sans-serif' }}>
       <style>{`
-        .nav-links { display: flex; align-items: center; gap: 4px; }
-        .nav-hamburger { display: none !important; }
-        .mobile-menu { display: none; }
-
         @keyframes pulseSoft {
           0% { opacity: .45; }
-          50% { opacity: .7; }
+          50% { opacity: .75; }
           100% { opacity: .45; }
         }
 
-        @media (max-width: 768px) {
-          .nav-links { display: none !important; }
-          .nav-hamburger { display: flex !important; }
-          .mobile-menu.open { display: flex !important; }
-          .hero-title { font-size: clamp(32px, 9vw, 56px) !important; letter-spacing: -1px !important; }
-          .hero-btns { flex-direction: column; align-items: center; }
-          .grid-3 { grid-template-columns: 1fr !important; }
-          .grid-steps { grid-template-columns: 1fr !important; }
-          .contact-grid { grid-template-columns: 1fr !important; }
-          .trust-grid { grid-template-columns: 1fr 1fr !important; }
-          .section-pad { padding: 60px 20px !important; }
-          .footer-links { gap: 16px !important; }
+        .section-pad {
+          padding-left: 24px;
+          padding-right: 24px;
         }
 
-        @media (min-width: 769px) and (max-width: 1024px) {
-          .grid-3 { grid-template-columns: repeat(2, 1fr) !important; }
-          .grid-steps { grid-templateColumns: repeat(3, 1fr) !important; }
-          .hero-title { font-size: clamp(34px, 5.5vw, 60px) !important; }
+        .hero-shell {
+          min-height: 100vh;
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 110px 24px 90px;
+          overflow: hidden;
+        }
+
+        .hero-grid {
+          position: relative;
+          z-index: 2;
+          width: 100%;
+          max-width: 1200px;
+          display: grid;
+          grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+          gap: 28px;
+          align-items: center;
+        }
+
+        .hero-copy {
+          max-width: 680px;
+        }
+
+        .hero-card {
+          background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 24px;
+          padding: 22px;
+          box-shadow: 0 20px 50px rgba(0,0,0,0.22);
+          backdrop-filter: blur(12px);
+        }
+
+        .hero-badges {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
+          margin-top: 20px;
+        }
+
+        .hero-title {
+          font-size: clamp(38px, 6.5vw, 76px);
+          letter-spacing: -2px;
+        }
+
+        .hero-btns {
+          display: flex;
+          gap: 12px;
+          flex-wrap: wrap;
+        }
+
+        .grid-3 {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+          gap: 22px;
+        }
+
+        .grid-steps {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+          gap: 20px;
+        }
+
+        .trust-grid {
+          display: grid;
+          grid-template-columns: repeat(5, 1fr);
+          gap: 12px;
+        }
+
+        .value-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+          gap: 18px;
+        }
+
+        .contact-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          gap: 16px;
+        }
+
+        .footer-links {
+          display: flex;
+          gap: 24px;
+          justify-content: center;
+          margin-bottom: 22px;
+          flex-wrap: wrap;
         }
 
         .event-img-wrap {
@@ -77,34 +148,94 @@ export default function HomePage() {
 
         .event-img-wrap img {
           width: 100%;
-          height: auto;
+          height: 220px;
           display: block;
-          object-fit: unset;
+          object-fit: cover;
+        }
+
+        @media (max-width: 1024px) {
+          .hero-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+          }
+
+          .hero-copy {
+            max-width: 100%;
+            text-align: center;
+            margin: 0 auto;
+          }
+
+          .hero-btns {
+            justify-content: center;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .hero-shell {
+            padding: 100px 20px 70px;
+            min-height: auto;
+          }
+
+          .hero-title {
+            font-size: clamp(32px, 9vw, 54px) !important;
+            letter-spacing: -1px !important;
+          }
+
+          .hero-btns {
+            flex-direction: column;
+            align-items: stretch;
+          }
+
+          .hero-btns a {
+            justify-content: center;
+          }
+
+          .grid-3,
+          .grid-steps,
+          .contact-grid,
+          .value-grid {
+            grid-template-columns: 1fr !important;
+          }
+
+          .trust-grid {
+            grid-template-columns: 1fr 1fr !important;
+          }
+
+          .section-pad {
+            padding-left: 20px !important;
+            padding-right: 20px !important;
+          }
+
+          .footer-links {
+            gap: 14px !important;
+          }
+
+          .event-img-wrap img {
+            height: 210px;
+          }
+        }
+
+        @media (max-width: 520px) {
+          .trust-grid {
+            grid-template-columns: 1fr !important;
+          }
+
+          .hero-badges {
+            grid-template-columns: 1fr;
+          }
         }
       `}</style>
 
       <Navbar />
 
       {/* HERO */}
-      <section
-        style={{
-          minHeight: '100vh',
-          position: 'relative',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          textAlign: 'center',
-          padding: '100px 24px 80px',
-          overflow: 'hidden',
-        }}
-      >
+      <section className="hero-shell">
         <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
           <div
             style={{
               position: 'absolute',
-              width: 700,
-              height: 700,
+              width: 760,
+              height: 760,
               borderRadius: '50%',
               background: 'radial-gradient(circle, rgba(26,60,94,0.45) 0%, transparent 65%)',
               top: '-15%',
@@ -114,130 +245,181 @@ export default function HomePage() {
           <div
             style={{
               position: 'absolute',
-              width: 500,
-              height: 500,
+              width: 540,
+              height: 540,
               borderRadius: '50%',
               background: 'radial-gradient(circle, rgba(46,117,182,0.18) 0%, transparent 65%)',
-              bottom: '0%',
-              right: '-5%',
+              bottom: '-5%',
+              right: '-6%',
             }}
           />
         </div>
 
-        <div style={{ position: 'relative', zIndex: 2, maxWidth: 760 }}>
-          <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              background: 'rgba(46,117,182,0.1)',
-              border: '1px solid rgba(46,117,182,0.25)',
-              borderRadius: 50,
-              padding: '7px 18px',
-              marginBottom: 28,
-            }}
-          >
-            <span
+        <div className="hero-grid">
+          <div className="hero-copy">
+            <div
               style={{
-                width: 7,
-                height: 7,
-                borderRadius: '50%',
-                background: '#2E75B6',
-                display: 'inline-block',
-              }}
-            />
-            <span style={{ color: '#60a5fa', fontSize: 12, fontWeight: 600, letterSpacing: '1.5px' }}>
-              EGYPT&apos;S NIGHTLIFE BOOKING PLATFORM
-            </span>
-          </div>
-
-          <h1
-            className="hero-title"
-            style={{
-              fontFamily: 'Poppins, sans-serif',
-              fontWeight: 800,
-              fontSize: 'clamp(38px, 6.5vw, 76px)',
-              lineHeight: 1.08,
-              color: '#fff',
-              margin: '0 0 20px',
-              letterSpacing: '-2px',
-            }}
-          >
-            Your Gateway to
-            <br />
-            <span
-              style={{
-                background: 'linear-gradient(135deg, #60a5fa, #2E75B6)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-              }}
-            >
-              Live Experiences
-            </span>
-          </h1>
-
-          <p
-            style={{
-              color: 'rgba(255,255,255,0.52)',
-              fontSize: 'clamp(14px, 2vw, 17px)',
-              lineHeight: 1.9,
-              maxWidth: 560,
-              margin: '0 auto 40px',
-            }}
-          >
-            Discover upcoming concerts, VIP parties, and nightlife events in Egypt with a faster, clearer, and more trusted booking experience.
-          </p>
-
-          <div
-            className="hero-btns"
-            style={{
-              display: 'flex',
-              gap: 12,
-              justifyContent: 'center',
-              flexWrap: 'wrap',
-            }}
-          >
-            <Link
-              href="/events"
-              style={{
-                textDecoration: 'none',
-                padding: '14px 34px',
-                borderRadius: 11,
-                background: 'linear-gradient(135deg, #1A3C5E, #2E75B6)',
-                color: '#fff',
-                fontWeight: 700,
-                fontSize: 15,
-                boxShadow: '0 8px 28px rgba(46,117,182,0.4)',
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: 8,
+                background: 'rgba(46,117,182,0.1)',
+                border: '1px solid rgba(46,117,182,0.25)',
+                borderRadius: 50,
+                padding: '7px 18px',
+                marginBottom: 24,
               }}
             >
-              🎫 Browse Events
-            </Link>
+              <span
+                style={{
+                  width: 7,
+                  height: 7,
+                  borderRadius: '50%',
+                  background: '#2E75B6',
+                  display: 'inline-block',
+                }}
+              />
+              <span style={{ color: '#60a5fa', fontSize: 12, fontWeight: 600, letterSpacing: '1.5px' }}>
+                EGYPT&apos;S NIGHTLIFE BOOKING PLATFORM
+              </span>
+            </div>
 
-            <Link
-              href="/auth/register"
+            <h1
+              className="hero-title"
               style={{
-                textDecoration: 'none',
-                padding: '14px 34px',
-                borderRadius: 11,
-                border: '1px solid rgba(255,255,255,0.1)',
-                color: 'rgba(255,255,255,0.78)',
-                fontWeight: 500,
-                fontSize: 15,
-                background: 'rgba(255,255,255,0.03)',
+                fontFamily: 'Poppins, sans-serif',
+                fontWeight: 800,
+                lineHeight: 1.06,
+                color: '#fff',
+                margin: '0 0 18px',
               }}
             >
-              Create Account →
-            </Link>
+              Discover, reserve, and enjoy
+              <br />
+              <span
+                style={{
+                  background: 'linear-gradient(135deg, #60a5fa, #2E75B6)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                }}
+              >
+                unforgettable nights
+              </span>
+            </h1>
+
+            <p
+              style={{
+                color: 'rgba(255,255,255,0.56)',
+                fontSize: 'clamp(14px, 2vw, 17px)',
+                lineHeight: 1.9,
+                maxWidth: 590,
+                margin: '0 0 34px',
+              }}
+            >
+              TicketHub helps people find upcoming concerts, VIP parties, and nightlife events in Egypt with a clearer booking flow, stronger trust, and a smoother path from discovery to entry.
+            </p>
+
+            <div className="hero-btns">
+              <Link
+                href="/events"
+                style={{
+                  textDecoration: 'none',
+                  padding: '14px 34px',
+                  borderRadius: 11,
+                  background: 'linear-gradient(135deg, #1A3C5E, #2E75B6)',
+                  color: '#fff',
+                  fontWeight: 700,
+                  fontSize: 15,
+                  boxShadow: '0 8px 28px rgba(46,117,182,0.32)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
+                }}
+              >
+                Browse Events →
+              </Link>
+
+              <Link
+                href="/auth/register"
+                style={{
+                  textDecoration: 'none',
+                  padding: '14px 34px',
+                  borderRadius: 11,
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  color: 'rgba(255,255,255,0.82)',
+                  fontWeight: 600,
+                  fontSize: 15,
+                  background: 'rgba(255,255,255,0.03)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                Create Account
+              </Link>
+            </div>
+          </div>
+
+          <div className="hero-card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+              <div>
+                <div style={{ color: 'rgba(255,255,255,0.32)', fontSize: 11, fontWeight: 700, letterSpacing: '2px', marginBottom: 8 }}>
+                  WHY TICKETHUB
+                </div>
+                <h3 style={{ color: '#fff', fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 22, margin: 0 }}>
+                  Clearer booking. Better trust.
+                </h3>
+              </div>
+              <div
+                style={{
+                  width: 46,
+                  height: 46,
+                  borderRadius: 14,
+                  background: 'rgba(46,117,182,0.12)',
+                  border: '1px solid rgba(46,117,182,0.22)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#60a5fa',
+                  fontSize: 20,
+                  fontWeight: 700,
+                }}
+              >
+                ✓
+              </div>
+            </div>
+
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 14, lineHeight: 1.8, margin: '0 0 18px' }}>
+              Built for premium events, nightlife experiences, and modern reservations with a more guided experience for both new and returning users.
+            </p>
+
+            <div className="hero-badges">
+              {[
+                { title: 'Fast discovery', sub: 'Browse upcoming events quickly' },
+                { title: 'Trusted flow', sub: 'Clear steps from booking to payment' },
+                { title: 'Real history', sub: 'Past events build confidence' },
+                { title: 'Mobile ready', sub: 'Optimized for phone, tablet, and desktop' },
+              ].map(item => (
+                <div
+                  key={item.title}
+                  style={{
+                    background: 'rgba(255,255,255,0.025)',
+                    border: '1px solid rgba(255,255,255,0.07)',
+                    borderRadius: 16,
+                    padding: '16px 14px',
+                  }}
+                >
+                  <div style={{ color: '#fff', fontSize: 14, fontWeight: 700, marginBottom: 6 }}>{item.title}</div>
+                  <div style={{ color: 'rgba(255,255,255,0.42)', fontSize: 12.5, lineHeight: 1.6 }}>{item.sub}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
       {/* TRUST BADGES */}
-      <section className="section-pad" style={{ padding: '0 24px 90px', maxWidth: 1200, margin: '-10px auto 0' }}>
+      <section className="section-pad" style={{ paddingBottom: 88, maxWidth: 1200, margin: '-6px auto 0' }}>
         <div
           style={{
             background: 'rgba(255,255,255,0.025)',
@@ -247,13 +429,31 @@ export default function HomePage() {
             boxShadow: '0 18px 44px rgba(0,0,0,0.18)',
           }}
         >
-          <div className="trust-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12, marginBottom: 24 }}>
+          <div style={{ textAlign: 'center', marginBottom: 24 }}>
+            <span style={{ color: '#2E75B6', fontSize: 11, fontWeight: 700, letterSpacing: '2.5px' }}>TRUST & CLARITY</span>
+            <h2
+              style={{
+                fontFamily: 'Poppins, sans-serif',
+                fontWeight: 700,
+                fontSize: 'clamp(22px, 3vw, 28px)',
+                color: '#fff',
+                margin: '10px 0 10px',
+              }}
+            >
+              A smoother and more trusted booking experience
+            </h2>
+            <p style={{ color: 'rgba(255,255,255,0.46)', fontSize: 14, lineHeight: 1.8, maxWidth: 620, margin: '0 auto' }}>
+              TicketHub is designed to make event discovery, reservation, and follow-up clearer for users who want speed, confidence, and fewer confusing steps.
+            </p>
+          </div>
+
+          <div className="trust-grid" style={{ marginBottom: 24 }}>
             {[
-              { title: 'Secure Booking', sub: 'PCI-DSS compliant payments' },
-              { title: 'Official Tickets', sub: 'Verified & authenticated' },
-              { title: 'QR Gate Entry', sub: 'Instant verification' },
-              { title: 'Live Support', sub: 'Rapid assistance available' },
-              { title: 'Trusted Platform', sub: 'Verified by 5K+ users' },
+              { title: 'Secure Booking', sub: 'Protected reservation experience' },
+              { title: 'Official Tickets', sub: 'Verified event access flow' },
+              { title: 'QR Gate Entry', sub: 'Fast check-in readiness' },
+              { title: 'Live Support', sub: 'Clear support channels' },
+              { title: 'Trusted Platform', sub: 'Built for real nightlife demand' },
             ].map(item => (
               <div
                 key={item.title}
@@ -300,19 +500,25 @@ export default function HomePage() {
             ))}
           </div>
 
-          {/* Trust Indicators Row */}
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: 20, display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap', fontSize: 13 }}>
+          <div
+            style={{
+              borderTop: '1px solid rgba(255,255,255,0.05)',
+              paddingTop: 20,
+              display: 'flex',
+              gap: 16,
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              fontSize: 13,
+            }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'rgba(255,255,255,0.6)' }}>
-              <span style={{ fontSize: 18 }}>🔒</span>
-              <span>256-bit SSL Encrypted</span>
+              <span>Secure reservations</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'rgba(255,255,255,0.6)' }}>
-              <span style={{ fontSize: 18 }}>✅</span>
-              <span>Verified by 5,000+ Users</span>
+              <span>Clear payment follow-up</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'rgba(255,255,255,0.6)' }}>
-              <span style={{ fontSize: 18 }}>⭐</span>
-              <span>4.8/5 Platform Rating</span>
+              <span>Designed for premium live experiences</span>
             </div>
           </div>
         </div>
@@ -320,56 +526,150 @@ export default function HomePage() {
 
       {/* FEATURED */}
       {featured.length > 0 && (
-        <section className="section-pad" style={{ padding: '0 24px 90px', maxWidth: 1200, margin: '0 auto' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 44, flexWrap: 'wrap', gap: 16 }}>
+        <section className="section-pad" style={{ paddingBottom: 90, maxWidth: 1200, margin: '0 auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 40, flexWrap: 'wrap', gap: 16 }}>
             <div>
               <span style={{ color: '#2E75B6', fontSize: 11, fontWeight: 700, letterSpacing: '2.5px' }}>FEATURED</span>
               <h2 style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 'clamp(22px, 3vw, 30px)', color: '#fff', margin: '10px 0 0' }}>
                 Hot Right Now
               </h2>
             </div>
-            <Link href="/events" style={{ color: '#2E75B6', textDecoration: 'none', fontSize: 14, fontWeight: 600, border: '1px solid rgba(46,117,182,0.25)', padding: '8px 18px', borderRadius: 8 }}>
+            <Link
+              href="/events"
+              style={{
+                color: '#2E75B6',
+                textDecoration: 'none',
+                fontSize: 14,
+                fontWeight: 600,
+                border: '1px solid rgba(46,117,182,0.25)',
+                padding: '8px 18px',
+                borderRadius: 8,
+              }}
+            >
               View All →
             </Link>
           </div>
 
-          <div className="grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 22 }}>
-            {featured.map(e => <EventCard key={e.id} event={e} />)}
+          <div className="grid-3">
+            {featured.map(e => (
+              <EventCard key={e.id} event={e} />
+            ))}
           </div>
         </section>
       )}
 
       {/* UPCOMING */}
       {upcoming.length > 0 && (
-        <section className="section-pad" style={{ padding: '0 24px 90px', maxWidth: 1200, margin: '0 auto' }}>
-          <div style={{ marginBottom: 44 }}>
+        <section className="section-pad" style={{ paddingBottom: 90, maxWidth: 1200, margin: '0 auto' }}>
+          <div style={{ marginBottom: 40 }}>
             <span style={{ color: '#2E75B6', fontSize: 11, fontWeight: 700, letterSpacing: '2.5px' }}>UPCOMING</span>
-            <h2 style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 'clamp(22px, 3vw, 30px)', color: '#fff', margin: '10px 0 0' }}>
+            <h2 style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 'clamp(22px, 3vw, 30px)', color: '#fff', margin: '10px 0 10px' }}>
               Don&apos;t Miss Out
             </h2>
+            <p style={{ color: 'rgba(255,255,255,0.42)', fontSize: 14, lineHeight: 1.8, maxWidth: 600, margin: 0 }}>
+              Browse upcoming nights and discover the next event worth planning for.
+            </p>
           </div>
 
-          <div className="grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 22 }}>
-            {upcoming.map(e => <EventCard key={e.id} event={e} />)}
+          <div className="grid-3">
+            {upcoming.map(e => (
+              <EventCard key={e.id} event={e} />
+            ))}
           </div>
         </section>
       )}
 
-      {/* PAST EVENTS */}
-      {past.length > 0 && (
-        <section className="section-pad" style={{ padding: '0 24px 90px', maxWidth: 1200, margin: '0 auto' }}>
-          <div style={{ marginBottom: 44 }}>
-            <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: 700, letterSpacing: '2.5px' }}>PAST EVENTS</span>
-            <h2 style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 'clamp(22px, 3vw, 30px)', color: '#fff', margin: '10px 0 0' }}>
-              Previously On TicketHub
+      {/* VALUE SECTION */}
+      <section className="section-pad" style={{ paddingBottom: 90, maxWidth: 1200, margin: '0 auto' }}>
+        <div
+          style={{
+            background: 'rgba(255,255,255,0.025)',
+            border: '1px solid rgba(255,255,255,0.07)',
+            borderRadius: 24,
+            padding: '28px 24px',
+          }}
+        >
+          <div style={{ marginBottom: 26 }}>
+            <span style={{ color: '#2E75B6', fontSize: 11, fontWeight: 700, letterSpacing: '2.5px' }}>WHY THIS PLATFORM</span>
+            <h2 style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 'clamp(22px, 3vw, 30px)', color: '#fff', margin: '10px 0 10px' }}>
+              Built to make nightlife booking clearer
             </h2>
-            <p style={{ color: 'rgba(255,255,255,0.42)', fontSize: 15, margin: '12px 0 0', lineHeight: 1.8, maxWidth: 560 }}>
-              Explore recent events that already happened on the platform and keep up with the experience history.
+            <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 14, lineHeight: 1.8, maxWidth: 640, margin: 0 }}>
+              Instead of leaving users confused after booking, TicketHub is moving toward a clearer experience with stronger guidance, cleaner visuals, and a more consistent flow across the whole platform.
             </p>
           </div>
 
-          <div className="grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 22 }}>
-            {past.map(e => <EventCard key={e.id} event={e} isPast />)}
+          <div className="value-grid">
+            {[
+              {
+                title: 'Clear Booking Journey',
+                desc: 'From selecting the event to understanding reservation status, every step should feel easier to follow.',
+              },
+              {
+                title: 'Better Trust Signals',
+                desc: 'Stronger trust badges, clearer wording, and better structure reduce hesitation during booking.',
+              },
+              {
+                title: 'Smoother Navigation',
+                desc: 'Users should always know where to go next, whether they are browsing events or checking details.',
+              },
+              {
+                title: 'Responsive Everywhere',
+                desc: 'The platform is being shaped to feel smooth on phone, tablet, and desktop without awkward gaps.',
+              },
+            ].map(item => (
+              <div
+                key={item.title}
+                style={{
+                  background: 'rgba(255,255,255,0.02)',
+                  border: '1px solid rgba(255,255,255,0.05)',
+                  borderRadius: 18,
+                  padding: '22px 18px',
+                }}
+              >
+                <div
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 12,
+                    marginBottom: 14,
+                    background: 'rgba(46,117,182,0.12)',
+                    border: '1px solid rgba(46,117,182,0.22)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#60a5fa',
+                    fontSize: 16,
+                    fontWeight: 700,
+                  }}
+                >
+                  +
+                </div>
+                <div style={{ color: '#fff', fontSize: 16, fontWeight: 700, marginBottom: 8 }}>{item.title}</div>
+                <div style={{ color: 'rgba(255,255,255,0.44)', fontSize: 13.5, lineHeight: 1.75 }}>{item.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* PAST EVENTS */}
+      {past.length > 0 && (
+        <section className="section-pad" style={{ paddingBottom: 90, maxWidth: 1200, margin: '0 auto' }}>
+          <div style={{ marginBottom: 40 }}>
+            <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: 700, letterSpacing: '2.5px' }}>EXPERIENCE HISTORY</span>
+            <h2 style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 'clamp(22px, 3vw, 30px)', color: '#fff', margin: '10px 0 0' }}>
+              Previously on TicketHub
+            </h2>
+            <p style={{ color: 'rgba(255,255,255,0.42)', fontSize: 15, margin: '12px 0 0', lineHeight: 1.8, maxWidth: 620 }}>
+              A look at recent experiences hosted through TicketHub, helping new visitors understand the kind of nights, quality, and atmosphere the platform is built for.
+            </p>
+          </div>
+
+          <div className="grid-3">
+            {past.map(e => (
+              <EventCard key={e.id} event={e} isPast />
+            ))}
           </div>
         </section>
       )}
@@ -377,16 +677,35 @@ export default function HomePage() {
       {/* EMPTY */}
       {!loading && featured.length === 0 && upcoming.length === 0 && past.length === 0 && (
         <section style={{ padding: '120px 24px', textAlign: 'center' }}>
-          <div style={{ fontSize: 60, marginBottom: 16 }}>🎭</div>
-          <h2 style={{ fontFamily: 'Poppins, sans-serif', color: '#fff', fontSize: 26 }}>Events Coming Soon</h2>
-          <p style={{ color: 'rgba(255,255,255,0.3)', marginTop: 10 }}>Stay tuned — big nights are being planned.</p>
+          <div
+            style={{
+              width: 76,
+              height: 76,
+              borderRadius: 22,
+              margin: '0 auto 18px',
+              background: 'rgba(46,117,182,0.12)',
+              border: '1px solid rgba(46,117,182,0.22)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#60a5fa',
+              fontSize: 24,
+              fontWeight: 700,
+            }}
+          >
+            +
+          </div>
+          <h2 style={{ fontFamily: 'Poppins, sans-serif', color: '#fff', fontSize: 26, marginBottom: 10 }}>Events Coming Soon</h2>
+          <p style={{ color: 'rgba(255,255,255,0.34)', marginTop: 0, fontSize: 15, lineHeight: 1.8 }}>
+            New nights are being prepared. Check back soon for upcoming events and reservations.
+          </p>
         </section>
       )}
 
       {/* LOADING */}
       {loading && (
         <section style={{ padding: '0 24px 100px', maxWidth: 1200, margin: '0 auto' }}>
-          <div className="grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 22 }}>
+          <div className="grid-3">
             {Array.from({ length: 6 }).map((_, i) => (
               <div
                 key={i}
@@ -414,7 +733,8 @@ export default function HomePage() {
       <section
         className="section-pad"
         style={{
-          padding: '90px 24px',
+          paddingTop: 90,
+          paddingBottom: 90,
           borderTop: '1px solid rgba(46,117,182,0.08)',
           background: 'linear-gradient(180deg, #0a0f1e 0%, #0c1220 100%)',
         }}
@@ -422,16 +742,19 @@ export default function HomePage() {
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 56 }}>
             <span style={{ color: '#2E75B6', fontSize: 11, fontWeight: 700, letterSpacing: '2.5px' }}>HOW IT WORKS</span>
-            <h2 style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 'clamp(22px, 3vw, 30px)', color: '#fff', margin: '10px 0 0' }}>
+            <h2 style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 'clamp(22px, 3vw, 30px)', color: '#fff', margin: '10px 0 10px' }}>
               Book in 3 Simple Steps
             </h2>
+            <p style={{ color: 'rgba(255,255,255,0.42)', fontSize: 14, lineHeight: 1.8, maxWidth: 580, margin: '0 auto' }}>
+              A simple path from finding the event to getting ready for the night.
+            </p>
           </div>
 
-          <div className="grid-steps" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 20 }}>
+          <div className="grid-steps">
             {[
-              { n: '01', icon: '🎫', title: 'Pick Your Event', desc: 'Browse upcoming concerts, parties, and VIP nights.' },
-              { n: '02', icon: '💳', title: 'Reserve & Pay', desc: 'Choose your ticket, fill details, and pay via Vodafone Cash or InstaPay.' },
-              { n: '03', icon: '📱', title: 'Get Your QR Ticket', desc: 'Receive a digital QR ticket and scan it at the gate.' },
+              { n: '01', title: 'Pick Your Event', desc: 'Browse upcoming concerts, parties, and premium nightlife experiences.' },
+              { n: '02', title: 'Reserve & Follow Payment Steps', desc: 'Choose your ticket and complete the reservation details with clear next steps.' },
+              { n: '03', title: 'Get Ready for Entry', desc: 'Receive your reservation outcome and prepare for gate access with a smoother flow.' },
             ].map(item => (
               <div
                 key={item.n}
@@ -458,8 +781,28 @@ export default function HomePage() {
                 >
                   {item.n}
                 </div>
-                <div style={{ fontSize: 34, marginBottom: 16 }}>{item.icon}</div>
-                <h3 style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 17, color: '#fff', margin: '0 0 10px' }}>{item.title}</h3>
+
+                <div
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 14,
+                    background: 'rgba(46,117,182,0.12)',
+                    border: '1px solid rgba(46,117,182,0.2)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#60a5fa',
+                    fontWeight: 700,
+                    marginBottom: 16,
+                  }}
+                >
+                  {item.n}
+                </div>
+
+                <h3 style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 17, color: '#fff', margin: '0 0 10px' }}>
+                  {item.title}
+                </h3>
                 <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 14, lineHeight: 1.8, margin: 0 }}>{item.desc}</p>
               </div>
             ))}
@@ -468,33 +811,36 @@ export default function HomePage() {
       </section>
 
       {/* ABOUT */}
-      <section id="about" className="section-pad" style={{ padding: '90px 24px', borderTop: '1px solid rgba(46,117,182,0.08)' }}>
-        <div style={{ maxWidth: 700, margin: '0 auto', textAlign: 'center' }}>
+      <section id="about" className="section-pad" style={{ paddingTop: 90, paddingBottom: 90, borderTop: '1px solid rgba(46,117,182,0.08)' }}>
+        <div style={{ maxWidth: 760, margin: '0 auto', textAlign: 'center' }}>
           <span style={{ color: '#2E75B6', fontSize: 11, fontWeight: 700, letterSpacing: '2.5px' }}>ABOUT US</span>
-          <h2 style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 'clamp(22px, 3vw, 30px)', color: '#fff', margin: '12px 0 24px' }}>
-            Who We Are
+          <h2 style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 'clamp(22px, 3vw, 30px)', color: '#fff', margin: '12px 0 18px' }}>
+            Built for better event discovery
           </h2>
           <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 'clamp(14px, 1.8vw, 16px)', lineHeight: 1.95, marginBottom: 14 }}>
-            TicketHub is Egypt&apos;s ticket booking platform for live events, concerts, VIP parties, and nightlife experiences.
+            TicketHub is Egypt&apos;s platform for live events, concerts, VIP parties, and nightlife experiences, with a stronger focus on clarity, smoother booking, and a better user journey.
           </p>
           <p style={{ color: 'rgba(255,255,255,0.34)', fontSize: 'clamp(13px, 1.6vw, 15px)', lineHeight: 1.9, margin: 0 }}>
-            We handle bookings, payments, and gate entry so the whole experience feels smoother from discovery to check-in.
+            The goal is to make every step easier to understand, from browsing and reservation to follow-up and event readiness.
           </p>
         </div>
       </section>
 
       {/* CONTACT */}
-      <section id="contact" className="section-pad" style={{ padding: '90px 24px', borderTop: '1px solid rgba(46,117,182,0.08)' }}>
-        <div style={{ maxWidth: 700, margin: '0 auto', textAlign: 'center' }}>
+      <section id="contact" className="section-pad" style={{ paddingTop: 90, paddingBottom: 90, borderTop: '1px solid rgba(46,117,182,0.08)' }}>
+        <div style={{ maxWidth: 760, margin: '0 auto', textAlign: 'center' }}>
           <span style={{ color: '#2E75B6', fontSize: 11, fontWeight: 700, letterSpacing: '2.5px' }}>GET IN TOUCH</span>
-          <h2 style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 'clamp(22px, 3vw, 30px)', color: '#fff', margin: '12px 0 44px' }}>
-            Contact Us
+          <h2 style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 'clamp(22px, 3vw, 30px)', color: '#fff', margin: '12px 0 18px' }}>
+            Need help or have a question?
           </h2>
+          <p style={{ color: 'rgba(255,255,255,0.42)', fontSize: 14, lineHeight: 1.8, maxWidth: 560, margin: '0 auto 36px' }}>
+            Reach out through the official TicketHub channels for updates, support, and reservation guidance.
+          </p>
 
-          <div className="contact-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
+          <div className="contact-grid">
             {[
-              { href: 'https://instagram.com/_tickethub', icon: '📸', label: 'INSTAGRAM', value: '@_tickethub', hoverColor: '#E1306C' },
-              { href: 'https://wa.me/201093379437', icon: '💬', label: 'WHATSAPP', value: '+20 109 337 9437', hoverColor: '#25D366' },
+              { href: 'https://instagram.com/_tickethub', label: 'INSTAGRAM', value: '@_tickethub', hoverColor: '#E1306C' },
+              { href: 'https://wa.me/201093379437', label: 'WHATSAPP', value: '+20 109 337 9437', hoverColor: '#25D366' },
             ].map(c => (
               <a key={c.label} href={c.href} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
                 <div
@@ -502,7 +848,7 @@ export default function HomePage() {
                     background: 'rgba(255,255,255,0.02)',
                     border: '1px solid rgba(46,117,182,0.1)',
                     borderRadius: 16,
-                    padding: '30px 20px',
+                    padding: '28px 20px',
                     transition: 'all 0.25s',
                     cursor: 'pointer',
                   }}
@@ -519,7 +865,24 @@ export default function HomePage() {
                     el.style.background = 'rgba(255,255,255,0.02)'
                   }}
                 >
-                  <div style={{ fontSize: 32, marginBottom: 12 }}>{c.icon}</div>
+                  <div
+                    style={{
+                      width: 42,
+                      height: 42,
+                      borderRadius: 12,
+                      margin: '0 auto 14px',
+                      background: 'rgba(46,117,182,0.12)',
+                      border: '1px solid rgba(46,117,182,0.22)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#60a5fa',
+                      fontSize: 18,
+                      fontWeight: 700,
+                    }}
+                  >
+                    ↗
+                  </div>
                   <div style={{ color: 'rgba(255,255,255,0.28)', fontSize: 10, letterSpacing: '2px', fontWeight: 700, marginBottom: 8 }}>
                     {c.label}
                   </div>
@@ -546,14 +909,14 @@ export default function HomePage() {
               fontSize: 13,
             }}
           >
-            🎟️
+            T
           </div>
           <span style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, color: '#fff', fontSize: 17 }}>
             Ticket<span style={{ color: '#2E75B6' }}>Hub</span>
           </span>
         </div>
 
-        <div className="footer-links" style={{ display: 'flex', gap: 24, justifyContent: 'center', marginBottom: 22, flexWrap: 'wrap' }}>
+        <div className="footer-links">
           {[
             { href: '/events', label: 'Events' },
             { href: '#about', label: 'About' },
@@ -575,7 +938,6 @@ export default function HomePage() {
   )
 }
 
-
 function EventCard({ event, isPast = false }: { event: Event; isPast?: boolean }) {
   const date = new Date(event.date)
   const day = date.toLocaleDateString('en-US', { day: '2-digit', timeZone: 'UTC' })
@@ -594,7 +956,8 @@ function EventCard({ event, isPast = false }: { event: Event; isPast?: boolean }
           transition: 'all 0.3s ease',
           display: 'flex',
           flexDirection: 'column',
-          opacity: isPast ? 0.7 : 1,
+          opacity: isPast ? 0.72 : 1,
+          minHeight: '100%',
         }}
         onMouseEnter={e => {
           const el = e.currentTarget as HTMLDivElement
@@ -608,7 +971,7 @@ function EventCard({ event, isPast = false }: { event: Event; isPast?: boolean }
           el.style.transform = 'translateY(0)'
           el.style.borderColor = 'rgba(255,255,255,0.06)'
           el.style.boxShadow = 'none'
-          el.style.opacity = isPast ? '0.7' : '1'
+          el.style.opacity = isPast ? '0.72' : '1'
         }}
       >
         <div className="event-img-wrap">
@@ -619,8 +982,18 @@ function EventCard({ event, isPast = false }: { event: Event; isPast?: boolean }
               style={{ filter: isPast ? 'grayscale(65%) brightness(0.72)' : 'none' }}
             />
           ) : (
-            <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 52 }}>
-              🎵
+            <div
+              style={{
+                height: 220,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#60a5fa',
+                fontSize: 40,
+                fontWeight: 700,
+              }}
+            >
+              EVENT
             </div>
           )}
 
@@ -648,7 +1021,7 @@ function EventCard({ event, isPast = false }: { event: Event; isPast?: boolean }
               borderRadius: 9,
               padding: '5px 9px',
               textAlign: 'center',
-              minWidth: 40,
+              minWidth: 44,
             }}
           >
             <div style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 15, color: '#fff', lineHeight: 1 }}>{day}</div>
@@ -694,18 +1067,22 @@ function EventCard({ event, isPast = false }: { event: Event; isPast?: boolean }
           ) : null}
         </div>
 
-        <div style={{ padding: '16px 16px 18px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+        <div style={{ padding: '18px 18px 20px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           <div>
             <h3 style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 16, color: '#fff', margin: '0 0 8px', lineHeight: 1.35 }}>
               {event.title}
             </h3>
 
-            <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 5 }}>
-              <span>📍</span> {event.location}
+            <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12.5, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 5 }}>
+              <span>Location</span>
+              <span style={{ color: 'rgba(255,255,255,0.26)' }}>•</span>
+              <span>{event.location}</span>
             </div>
 
-            <div style={{ color: 'rgba(255,255,255,0.28)', fontSize: 12, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 5 }}>
-              <span>🕐</span> {time}
+            <div style={{ color: 'rgba(255,255,255,0.28)', fontSize: 12.5, marginBottom: 18, display: 'flex', alignItems: 'center', gap: 5 }}>
+              <span>Time</span>
+              <span style={{ color: 'rgba(255,255,255,0.2)' }}>•</span>
+              <span>{time}</span>
             </div>
           </div>
 
@@ -723,7 +1100,7 @@ function EventCard({ event, isPast = false }: { event: Event; isPast?: boolean }
               width: 'fit-content',
             }}
           >
-            {isPast ? 'View Details' : '🎫 Book Now'}
+            {isPast ? 'View Details' : 'Book Now'}
           </div>
         </div>
       </div>

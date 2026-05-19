@@ -1,17 +1,20 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import type { CSSProperties } from 'react'
-import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { useRouter, usePathname } from 'next/navigation'
-import { Menu, X, User } from 'lucide-react'
+import { usePathname, useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase'
+
+type NavLink =
+  | { label: string; type: 'route'; href: string }
+  | { label: string; type: 'section'; id: string }
 
 export default function Navbar() {
   const router = useRouter()
   const pathname = usePathname()
 
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<any | null>(null)
   const [loading, setLoading] = useState(true)
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -45,7 +48,7 @@ export default function Navbar() {
     }
   }, [])
 
-  const scrollTo = (id: string) => {
+  const goToSection = (id: string) => {
     if (pathname === '/') {
       document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
     } else {
@@ -54,31 +57,14 @@ export default function Navbar() {
     setMenuOpen(false)
   }
 
-  const displayName =
-    user?.user_metadata?.full_name ||
-    user?.user_metadata?.name ||
-    user?.email?.split('@')?.[0] ||
-    'My Profile'
+  const handleNavClick = (link: NavLink) => {
+    if (link.type === 'route') {
+      router.push(link.href)
+      setMenuOpen(false)
+      return
+    }
 
-  const navLinks = [
-    { label: 'Events', id: 'events' },
-    { label: 'DJs', id: 'djs' },
-    { label: 'Partners', id: 'partners' },
-    { label: 'About', id: 'about' },
-    { label: 'Contact', id: 'contact' },
-  ]
-
-  const navLinkStyle: CSSProperties = {
-    color: 'rgba(255,255,255,0.55)',
-    fontSize: '13px',
-    fontWeight: 500,
-    cursor: 'pointer',
-    background: 'none',
-    border: 'none',
-    fontFamily: 'Inter, sans-serif',
-    padding: 0,
-    textDecoration: 'none',
-    transition: 'color 0.2s ease',
+    goToSection(link.id)
   }
 
   const handleLogout = async () => {
@@ -89,6 +75,32 @@ export default function Navbar() {
     router.refresh()
   }
 
+  const displayName =
+    user?.user_metadata?.full_name ||
+    user?.user_metadata?.name ||
+    user?.email?.split('@')?.[0] ||
+    'My Profile'
+
+  const navLinks: NavLink[] = [
+    { label: 'EVENTS', type: 'route', href: '/events' },
+    { label: 'ABOUT', type: 'section', id: 'about' },
+    { label: 'CONTACT', type: 'section', id: 'contact' },
+  ]
+
+  const linkBtn: CSSProperties = {
+    color: 'rgba(255,255,255,0.35)',
+    fontSize: '12px',
+    fontWeight: 600,
+    letterSpacing: '1.5px',
+    cursor: 'pointer',
+    background: 'none',
+    border: 'none',
+    fontFamily: 'Inter, sans-serif',
+    padding: 0,
+    textDecoration: 'none',
+    transition: 'color 0.15s ease, background 0.15s ease, border-color 0.15s ease',
+  }
+
   const ProfileBadge = ({ mobile = false }: { mobile?: boolean }) => (
     <Link
       href="/profile"
@@ -96,47 +108,48 @@ export default function Navbar() {
       style={{
         display: 'flex',
         alignItems: 'center',
-        gap: mobile ? 12 : 10,
+        gap: mobile ? 10 : 8,
         textDecoration: 'none',
-        transition: 'opacity 0.2s ease',
-      }}
-      onMouseEnter={e => {
-        e.currentTarget.style.opacity = '0.8'
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.opacity = '1'
       }}
     >
       <div
         style={{
-          width: mobile ? 36 : 36,
-          height: mobile ? 36 : 36,
+          width: mobile ? 32 : 34,
+          height: mobile ? 32 : 34,
           borderRadius: '50%',
-          background: 'rgba(46,117,182,0.15)',
-          border: '1.5px solid rgba(46,117,182,0.35)',
+          background: 'rgba(46,117,182,0.12)',
+          border: '1px solid rgba(46,117,182,0.3)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          fontSize: mobile ? 14 : 15,
+          transition: 'border-color 0.2s ease',
           flexShrink: 0,
-          transition: 'all 0.2s ease',
+          color: '#fff',
+        }}
+        onMouseEnter={e => {
+          e.currentTarget.style.borderColor = '#2E75B6'
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.borderColor = 'rgba(46,117,182,0.3)'
         }}
       >
-        <User size={16} color="rgba(255,255,255,0.7)" strokeWidth={1.5} />
+        {displayName.charAt(0).toUpperCase()}
       </div>
 
       <span
         style={{
-          color: 'rgba(255,255,255,0.65)',
-          fontSize: mobile ? 13 : 13,
-          fontWeight: 600,
-          letterSpacing: '0.3px',
-          maxWidth: mobile ? 160 : 140,
+          color: 'rgba(255,255,255,0.68)',
+          fontSize: mobile ? 13 : 12,
+          fontWeight: 700,
+          letterSpacing: '0.4px',
+          maxWidth: mobile ? 140 : 120,
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           whiteSpace: 'nowrap',
         }}
       >
-        {mobile ? displayName : 'Profile'}
+        {mobile ? displayName : 'My Profile'}
       </span>
     </Link>
   )
@@ -146,11 +159,11 @@ export default function Navbar() {
       return (
         <div
           style={{
-            width: 80,
+            width: 96,
             height: 36,
-            borderRadius: 8,
+            borderRadius: 10,
             background: 'rgba(255,255,255,0.05)',
-            animation: 'pulse 2s ease-in-out infinite',
+            animation: 'pulse 1.5s ease-in-out infinite',
           }}
         />
       )
@@ -158,25 +171,22 @@ export default function Navbar() {
 
     if (user) {
       return (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <ProfileBadge />
           <button
             onClick={handleLogout}
             style={{
-              ...navLinkStyle,
-              color: 'rgba(255,255,255,0.4)',
-              fontSize: '13px',
-              fontWeight: 500,
-              transition: 'color 0.2s ease',
+              ...linkBtn,
+              color: 'rgba(255,255,255,0.24)',
             }}
             onMouseEnter={e => {
-              e.currentTarget.style.color = 'rgba(231,76,60,0.9)'
+              e.currentTarget.style.color = '#E74C3C'
             }}
             onMouseLeave={e => {
-              e.currentTarget.style.color = 'rgba(255,255,255,0.4)'
+              e.currentTarget.style.color = 'rgba(255,255,255,0.24)'
             }}
           >
-            Sign Out
+            LOGOUT
           </button>
         </div>
       )
@@ -186,28 +196,20 @@ export default function Navbar() {
       <Link
         href="/auth/login?redirect=/profile"
         style={{
-          background: 'linear-gradient(135deg, #2E75B6, #1E5A96)',
+          background: 'linear-gradient(135deg, #1A3C5E, #2E75B6)',
           color: '#fff',
-          padding: '9px 24px',
-          borderRadius: 8,
-          fontWeight: 600,
-          fontSize: 13,
+          padding: '9px 20px',
+          borderRadius: 10,
+          fontWeight: 700,
+          fontSize: 12,
           textDecoration: 'none',
-          transition: 'all 0.2s ease',
+          letterSpacing: '1px',
           whiteSpace: 'nowrap',
-          boxShadow: '0 2px 8px rgba(46,117,182,0.25)',
-          border: '1px solid rgba(255,255,255,0.1)',
-        }}
-        onMouseEnter={e => {
-          e.currentTarget.style.boxShadow = '0 4px 16px rgba(46,117,182,0.35)'
-          e.currentTarget.style.transform = 'translateY(-1px)'
-        }}
-        onMouseLeave={e => {
-          e.currentTarget.style.boxShadow = '0 2px 8px rgba(46,117,182,0.25)'
-          e.currentTarget.style.transform = 'translateY(0)'
+          boxShadow: '0 4px 14px rgba(46,117,182,0.3)',
+          fontFamily: 'Poppins, sans-serif',
         }}
       >
-        Sign In
+        LOGIN
       </Link>
     )
   }
@@ -220,54 +222,38 @@ export default function Navbar() {
 
         @keyframes pulse {
           0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
+          50% { opacity: .45; }
         }
 
-        @media (max-width: 640px) {
+        @media (max-width: 768px) {
           .nav-desktop { display: none !important; }
           .nav-hamburger { display: flex !important; }
-          .logo-text { font-size: 16px !important; }
-        }
-
-        .mobile-menu {
-          animation: slideDown 0.25s ease;
-        }
-
-        @keyframes slideDown {
-          from {
-            opacity: 0;
-            transform: translateY(-8px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
         }
       `}</style>
 
       <nav
         style={{
-          background: 'rgba(10,15,30,0.92)',
-          backdropFilter: 'blur(24px)',
-          WebkitBackdropFilter: 'blur(24px)',
-          borderBottom: '1px solid rgba(46,117,182,0.1)',
+          background: 'rgba(10,15,30,0.95)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(46,117,182,0.12)',
           padding: '0 24px',
-          height: 68,
+          height: 64,
           position: 'sticky',
           top: 0,
           zIndex: 100,
           fontFamily: 'Inter, sans-serif',
-          display: 'flex',
-          alignItems: 'center',
         }}
       >
         <div
           style={{
-            width: '100%',
+            maxWidth: 1200,
+            margin: '0 auto',
+            height: '100%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            gap: 16,
+            gap: 12,
           }}
         >
           <Link
@@ -276,82 +262,68 @@ export default function Navbar() {
               textDecoration: 'none',
               display: 'flex',
               alignItems: 'center',
-              gap: 10,
+              gap: 9,
               flexShrink: 0,
-              transition: 'opacity 0.2s ease',
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.opacity = '0.85'
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.opacity = '1'
             }}
           >
             <div
               style={{
-                width: 40,
-                height: 40,
+                width: 34,
+                height: 34,
                 borderRadius: 10,
-                background: 'linear-gradient(135deg, #2E75B6, #1E5A96)',
+                background: 'linear-gradient(135deg, #1A3C5E, #2E75B6)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                flexShrink: 0,
-                boxShadow: '0 4px 12px rgba(46,117,182,0.3)',
-                border: '1px solid rgba(255,255,255,0.1)',
+                fontSize: 15,
+                boxShadow: '0 4px 14px rgba(46,117,182,0.3)',
               }}
             >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" color="#fff">
-                <path d="M7 10c0-1.657 1.343-3 3-3h4c1.657 0 3 1.343 3 3v6c0 1.657-1.343 3-3 3h-4c-1.657 0-3-1.343-3-3v-6z" />
-                <path d="M14 7v10M10 7v10M8 5h8" />
-              </svg>
+              🎟️
             </div>
 
             <span
-              className="logo-text"
               style={{
                 fontFamily: 'Poppins, sans-serif',
-                fontWeight: 700,
-                fontSize: 18,
+                fontWeight: 800,
+                fontSize: 19,
                 color: '#fff',
-                letterSpacing: '-0.5px',
+                letterSpacing: '-0.3px',
               }}
             >
               Ticket<span style={{ color: '#2E75B6' }}>Hub</span>
             </span>
           </Link>
 
-          <div className="nav-desktop" style={{ alignItems: 'center', gap: 36, marginLeft: 'auto' }}>
+          <div className="nav-desktop" style={{ alignItems: 'center', gap: 28 }}>
             {navLinks.map(link => (
               <button
-                key={link.id}
-                onClick={() => scrollTo(link.id)}
-                style={navLinkStyle}
+                key={link.label}
+                onClick={() => handleNavClick(link)}
+                style={linkBtn}
                 onMouseEnter={e => {
-                  e.currentTarget.style.color = 'rgba(255,255,255,0.95)'
+                  e.currentTarget.style.color = '#fff'
                 }}
                 onMouseLeave={e => {
-                  e.currentTarget.style.color = 'rgba(255,255,255,0.55)'
+                  e.currentTarget.style.color = 'rgba(255,255,255,0.35)'
                 }}
               >
                 {link.label}
               </button>
             ))}
-          </div>
 
-          <div className="nav-desktop" style={{ marginLeft: 'auto' }}>
             <AuthSection />
           </div>
 
-          <div className="nav-hamburger" style={{ alignItems: 'center', gap: 12, marginLeft: 'auto' }}>
-            {!loading && user && <ProfileBadge mobile />}
+          <div className="nav-hamburger" style={{ alignItems: 'center', gap: 10 }}>
+            {!loading && user && <ProfileBadge />}
 
             <button
               onClick={() => setMenuOpen(v => !v)}
               style={{
-                background: 'rgba(46,117,182,0.1)',
-                border: '1px solid rgba(46,117,182,0.25)',
-                borderRadius: 8,
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: 9,
                 width: 40,
                 height: 40,
                 display: 'flex',
@@ -359,19 +331,20 @@ export default function Navbar() {
                 justifyContent: 'center',
                 cursor: 'pointer',
                 flexShrink: 0,
-                transition: 'all 0.2s ease',
               }}
-              onMouseEnter={e => {
-                e.currentTarget.style.background = 'rgba(46,117,182,0.15)'
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.background = 'rgba(46,117,182,0.1)'
-              }}
+              aria-label="Toggle menu"
             >
               {menuOpen ? (
-                <X size={18} color="rgba(255,255,255,0.8)" strokeWidth={1.5} />
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <line x1="1" y1="1" x2="13" y2="13" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
+                  <line x1="13" y1="1" x2="1" y2="13" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
+                </svg>
               ) : (
-                <Menu size={18} color="rgba(255,255,255,0.8)" strokeWidth={1.5} />
+                <svg width="18" height="12" viewBox="0 0 18 12" fill="none">
+                  <rect width="18" height="2" rx="1" fill="rgba(255,255,255,0.75)" />
+                  <rect y="5" width="18" height="2" rx="1" fill="rgba(255,255,255,0.75)" />
+                  <rect y="10" width="18" height="2" rx="1" fill="rgba(255,255,255,0.75)" />
+                </svg>
               )}
             </button>
           </div>
@@ -380,95 +353,79 @@ export default function Navbar() {
 
       {menuOpen && (
         <div
-          className="mobile-menu"
           style={{
             position: 'fixed',
-            top: 68,
+            top: 64,
             left: 0,
             right: 0,
             zIndex: 99,
-            background: 'rgba(10,15,30,0.96)',
-            backdropFilter: 'blur(24px)',
-            borderBottom: '1px solid rgba(46,117,182,0.1)',
-            padding: '20px 20px 24px',
+            background: 'rgba(10,15,30,0.98)',
+            backdropFilter: 'blur(20px)',
+            borderBottom: '1px solid rgba(46,117,182,0.12)',
+            padding: '16px 20px 20px',
             display: 'flex',
             flexDirection: 'column',
-            gap: 8,
+            gap: 2,
           }}
         >
           {navLinks.map(link => (
             <button
-              key={link.id}
-              onClick={() => scrollTo(link.id)}
+              key={link.label}
+              onClick={() => handleNavClick(link)}
               style={{
-                ...navLinkStyle,
+                ...linkBtn,
                 textAlign: 'left',
-                padding: '14px 16px',
-                borderRadius: 8,
-                fontSize: 13,
-                fontWeight: 500,
+                padding: '12px 10px',
+                borderRadius: 10,
+                fontSize: 12,
+                letterSpacing: '2px',
                 width: '100%',
-                background: 'transparent',
-                transition: 'all 0.2s ease',
               }}
               onMouseEnter={e => {
-                e.currentTarget.style.background = 'rgba(46,117,182,0.1)'
-                e.currentTarget.style.color = 'rgba(255,255,255,0.95)'
+                e.currentTarget.style.background = 'rgba(46,117,182,0.08)'
+                e.currentTarget.style.color = '#fff'
               }}
               onMouseLeave={e => {
                 e.currentTarget.style.background = 'transparent'
-                e.currentTarget.style.color = 'rgba(255,255,255,0.55)'
+                e.currentTarget.style.color = 'rgba(255,255,255,0.35)'
               }}
             >
               {link.label}
             </button>
           ))}
 
-          <div style={{ height: 1, background: 'rgba(46,117,182,0.1)', margin: '12px 0' }} />
+          <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '10px 0' }} />
 
           {loading ? (
             <div
               style={{
-                height: 48,
-                borderRadius: 8,
+                height: 44,
+                borderRadius: 12,
                 background: 'rgba(255,255,255,0.05)',
-                animation: 'pulse 2s ease-in-out infinite',
+                animation: 'pulse 1.5s ease-in-out infinite',
               }}
             />
           ) : user ? (
             <div
               style={{
                 display: 'flex',
-                flexDirection: 'column',
-                gap: 12,
-                padding: '8px 0',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '6px 10px',
               }}
             >
               <ProfileBadge mobile />
               <button
                 onClick={handleLogout}
                 style={{
-                  ...navLinkStyle,
-                  color: 'rgba(231,76,60,0.8)',
-                  fontSize: 13,
-                  fontWeight: 500,
-                  textAlign: 'left',
-                  padding: '14px 16px',
-                  borderRadius: 8,
-                  background: 'transparent',
-                  transition: 'all 0.2s ease',
-                  width: '100%',
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.background = 'rgba(231,76,60,0.08)'
-                  e.currentTarget.style.color = 'rgba(231,76,60,1)'
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.background = 'transparent'
-                  e.currentTarget.style.color = 'rgba(231,76,60,0.8)'
+                  ...linkBtn,
+                  color: '#E74C3C',
+                  fontSize: 11,
+                  letterSpacing: '1.5px',
+                  fontWeight: 700,
                 }}
               >
-                Sign Out
+                LOGOUT
               </button>
             </div>
           ) : (
@@ -476,28 +433,22 @@ export default function Navbar() {
               href="/auth/login?redirect=/profile"
               onClick={() => setMenuOpen(false)}
               style={{
-                background: 'linear-gradient(135deg, #2E75B6, #1E5A96)',
+                background: 'linear-gradient(135deg, #1A3C5E, #2E75B6)',
                 color: '#fff',
-                padding: '14px 16px',
-                borderRadius: 8,
-                fontWeight: 600,
+                padding: '14px 0',
+                borderRadius: 12,
+                fontWeight: 700,
                 fontSize: 13,
                 textDecoration: 'none',
+                letterSpacing: '1px',
                 textAlign: 'center',
                 display: 'block',
-                margin: '8px 0 0',
-                boxShadow: '0 2px 8px rgba(46,117,182,0.2)',
-                border: '1px solid rgba(255,255,255,0.1)',
-                transition: 'all 0.2s ease',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.boxShadow = '0 4px 16px rgba(46,117,182,0.35)'
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.boxShadow = '0 2px 8px rgba(46,117,182,0.2)'
+                margin: '4px 0 2px',
+                fontFamily: 'Poppins, sans-serif',
+                boxShadow: '0 4px 14px rgba(46,117,182,0.25)',
               }}
             >
-              Sign In
+              LOGIN
             </Link>
           )}
         </div>
