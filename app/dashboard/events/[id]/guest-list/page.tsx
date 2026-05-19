@@ -16,7 +16,7 @@ type GuestTicket = {
   payment_status: string | null
   qr_code: string | null
   is_guest_list?: boolean | null
-  created_at?: string
+  created_at?: string | null
 }
 
 type EventMini = {
@@ -44,13 +44,14 @@ const isValidInstagramUrl = (url: string) => {
 export default function GuestListPage() {
   const router = useRouter()
   const params = useParams<{ id: string }>()
-  const eventId = params.id
+  const eventId = typeof params?.id === 'string' ? params.id : ''
 
   const [event, setEvent] = useState<EventMini | null>(null)
   const [tickets, setTickets] = useState<GuestTicket[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState('')
+  const [error, setError] = useState('')
 
   const [editingId, setEditingId] = useState<string | null>(null)
   const [name, setName] = useState('')
@@ -58,28 +59,40 @@ export default function GuestListPage() {
   const [instagram, setInstagram] = useState('')
 
   const load = async () => {
-    setLoading(true)
+    if (!eventId) return
 
-    const [{ data: eventData, error: eventError }, { data: guestData, error: guestError }] = await Promise.all([
-      supabase.from('events').select('id,title,date,location').eq('id', eventId).single(),
-      supabase
-        .from('tickets')
-        .select('*')
-        .eq('event_id', eventId)
-        .eq('ticket_type', 'guest')
-        .order('created_at', { ascending: false }),
-    ])
+    setLoading(true)
+    setError('')
+
+    const [{ data: eventData, error: eventError }, { data: guestData, error: guestError }] =
+      await Promise.all([
+        supabase.from('events').select('id,title,date,location').eq('id', eventId).single(),
+        supabase
+          .from('tickets')
+          .select(
+            'id,event_id,full_name,phone,instagram,ticket_type,price_paid,status,payment_status,qr_code,is_guest_list,created_at'
+          )
+          .eq('event_id', eventId)
+          .eq('ticket_type', 'guest')
+          .order('created_at', { ascending: false }),
+      ])
 
     if (eventError) {
-      alert('Event load error: ' + eventError.message)
+      setError(`Event load error: ${eventError.message}`)
+      setEvent(null)
+    } else {
+      setEvent((eventData as EventMini) || null)
     }
 
     if (guestError) {
-      alert('Guest list load error: ' + guestError.message)
+      setError(prev =>
+        prev ? `${prev} | Guest list load error: ${guestError.message}` : `Guest list load error: ${guestError.message}`
+      )
+      setTickets([])
+    } else {
+      setTickets((guestData as GuestTicket[]) || [])
     }
 
-    setEvent((eventData as EventMini) || null)
-    setTickets((guestData as GuestTicket[]) || [])
     setLoading(false)
   }
 
@@ -89,8 +102,10 @@ export default function GuestListPage() {
       return
     }
 
-    if (eventId) load()
-  }, [eventId])
+    if (eventId) {
+      load()
+    }
+  }, [eventId, router])
 
   const resetForm = () => {
     setEditingId(null)
@@ -102,21 +117,27 @@ export default function GuestListPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setMsg('')
+    setError('')
+
+    if (!eventId) {
+      setError('Invalid event id.')
+      return
+    }
 
     if (!name.trim() || !phone.trim() || !instagram.trim()) {
-      alert('Please fill name, phone number, and Instagram URL.')
+      setError('Please fill name, phone number, and Instagram URL.')
       return
     }
 
     if (!isValidInstagramUrl(instagram.trim())) {
-      alert('Please enter a valid Instagram URL.')
+      setError('Please enter a valid Instagram URL.')
       return
     }
 
     setSaving(true)
 
     if (editingId) {
-      const { error } = await supabase
+      const { error: updateError } = await supabase
         .from('tickets')
         .update({
           full_name: name.trim(),
@@ -126,8 +147,8 @@ export default function GuestListPage() {
         .eq('id', editingId)
         .select()
 
-      if (error) {
-        alert('Update error: ' + error.message)
+      if (updateError) {
+        setError(`Update error: ${updateError.message}`)
         setSaving(false)
         return
       }
@@ -136,7 +157,7 @@ export default function GuestListPage() {
     } else {
       const qr = makeQrValue()
 
-      const { error } = await supabase
+      const { error: insertError } = await supabase
         .from('tickets')
         .insert({
           event_id: eventId,
@@ -152,8 +173,8 @@ export default function GuestListPage() {
         })
         .select()
 
-      if (error) {
-        alert('Insert error: ' + error.message)
+      if (insertError) {
+        setError(`Insert error: ${insertError.message}`)
         setSaving(false)
         return
       }
@@ -164,7 +185,8 @@ export default function GuestListPage() {
     resetForm()
     await load()
     setSaving(false)
-    setTimeout(() => setMsg(''), 3000)
+
+    window.setTimeout(() => setMsg(''), 3000)
   }
 
   const handleEdit = (ticket: GuestTicket) => {
@@ -172,17 +194,23 @@ export default function GuestListPage() {
     setName(ticket.full_name || '')
     setPhone(ticket.phone || '')
     setInstagram(ticket.instagram || '')
+
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this guest ticket?')) return
+    const ok = window.confirm('Delete this guest ticket?')
+    if (!ok) return
 
-    const { error } = await supabase.from('tickets').delete().eq('id', id)
-    if (error) {
-      alert('Delete error: ' + error.message)
+    setMsg('')
+    setError('')
+
+    const { error: deleteError } = await supabase.from('tickets').delete().eq('id', id).select()
+
+    if (deleteError) {
+      setError(`Delete error: ${deleteError.message}`)
       return
     }
 
@@ -190,28 +218,32 @@ export default function GuestListPage() {
 
     setMsg('✅ Guest deleted successfully!')
     await load()
-    setTimeout(() => setMsg(''), 3000)
+    window.setTimeout(() => setMsg(''), 3000)
   }
 
   const handleRegenerateQr = async (ticket: GuestTicket) => {
-    if (!confirm('Generate a new QR code for this guest? The old code will stop working.')) return
+    const ok = window.confirm('Generate a new QR code for this guest? The old code will stop working.')
+    if (!ok) return
+
+    setMsg('')
+    setError('')
 
     const newQr = makeQrValue()
 
-    const { error } = await supabase
+    const { error: qrError } = await supabase
       .from('tickets')
       .update({ qr_code: newQr })
       .eq('id', ticket.id)
       .select()
 
-    if (error) {
-      alert('QR update error: ' + error.message)
+    if (qrError) {
+      setError(`QR update error: ${qrError.message}`)
       return
     }
 
     setMsg('✅ QR code regenerated successfully!')
     await load()
-    setTimeout(() => setMsg(''), 3000)
+    window.setTimeout(() => setMsg(''), 3000)
   }
 
   const guestCount = useMemo(() => tickets.length, [tickets])
@@ -242,7 +274,14 @@ export default function GuestListPage() {
   })
 
   return (
-    <main style={{ minHeight: '100vh', backgroundColor: '#0a0f1e', padding: '0', fontFamily: 'Inter, sans-serif' }}>
+    <main
+      style={{
+        minHeight: '100vh',
+        backgroundColor: '#0a0f1e',
+        padding: '0',
+        fontFamily: 'Inter, sans-serif',
+      }}
+    >
       <div
         style={{
           position: 'fixed',
@@ -258,6 +297,8 @@ export default function GuestListPage() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
+          gap: 12,
+          flexWrap: 'wrap',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -325,7 +366,16 @@ export default function GuestListPage() {
             MANAGE GUEST TICKETS
           </p>
 
-          <h1 style={{ color: '#fff', fontSize: 34, fontWeight: 800, margin: '0 0 8px', fontFamily: 'Poppins, sans-serif', letterSpacing: '-1px' }}>
+          <h1
+            style={{
+              color: '#fff',
+              fontSize: 34,
+              fontWeight: 800,
+              margin: '0 0 8px',
+              fontFamily: 'Poppins, sans-serif',
+              letterSpacing: '-1px',
+            }}
+          >
             {event?.title || 'Loading event...'}
           </h1>
 
@@ -360,6 +410,23 @@ export default function GuestListPage() {
           </div>
         )}
 
+        {error && (
+          <div
+            style={{
+              background: 'rgba(231,76,60,0.08)',
+              border: '1px solid rgba(231,76,60,0.22)',
+              borderRadius: 12,
+              padding: '12px 18px',
+              color: '#ff7b72',
+              fontSize: 14,
+              marginBottom: 22,
+              lineHeight: 1.7,
+            }}
+          >
+            {error}
+          </div>
+        )}
+
         <div
           style={{
             background: 'rgba(255,255,255,0.02)',
@@ -374,7 +441,14 @@ export default function GuestListPage() {
           </p>
 
           <form onSubmit={handleSubmit}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 14 }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                gap: 12,
+                marginBottom: 14,
+              }}
+            >
               <input
                 style={inputStyle}
                 placeholder="Full name"
@@ -497,19 +571,39 @@ export default function GuestListPage() {
                     >
                       GUEST
                     </span>
+
+                    {ticket.payment_status && (
+                      <span
+                        style={{
+                          background: 'rgba(39,174,96,0.08)',
+                          border: '1px solid rgba(39,174,96,0.22)',
+                          color: '#86efac',
+                          padding: '3px 10px',
+                          borderRadius: 999,
+                          fontSize: 10,
+                          fontWeight: 700,
+                          letterSpacing: '1px',
+                        }}
+                      >
+                        {ticket.payment_status.toUpperCase()}
+                      </span>
+                    )}
                   </div>
 
                   <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13, margin: '0 0 5px' }}>
                     📞 {ticket.phone}
                   </p>
-                  <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13, margin: '0 0 5px' }}>
-                    Instagram: {ticket.instagram}
+                  <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 13, margin: '0 0 5px', wordBreak: 'break-word' }}>
+                    Instagram: {ticket.instagram || '-'}
                   </p>
                   <p style={{ color: '#86efac', fontSize: 13, fontWeight: 700, margin: '0 0 5px' }}>
-                    Price: 0 EGP
+                    Price: {ticket.price_paid ?? 0} EGP
                   </p>
-                  <p style={{ color: '#60a5fa', fontSize: 12, fontWeight: 700, margin: 0, wordBreak: 'break-all' }}>
-                    QR: {ticket.qr_code}
+                  <p style={{ color: '#60a5fa', fontSize: 12, fontWeight: 700, margin: '0 0 5px', wordBreak: 'break-all' }}>
+                    QR: {ticket.qr_code || '-'}
+                  </p>
+                  <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, margin: 0 }}>
+                    Status: {ticket.status || 'active'}
                   </p>
                 </div>
 
