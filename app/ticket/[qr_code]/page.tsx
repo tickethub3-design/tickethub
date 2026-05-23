@@ -25,7 +25,6 @@ const typeConfig: Record<string, TicketType> = {
   vip:       { color: '#f59e0b', bg: 'rgba(245,158,11,0.08)',  border: 'rgba(245,158,11,0.2)',  label: 'VIP',        accent: '#fbbf24', glow: 'rgba(251,191,36,0.3)',   icon: '♛' },
 }
 
-// ─── Loading Screen ───────────────────────────────────────────────────────────
 function LoadingScreen() {
   return (
     <div className="tp-root">
@@ -38,7 +37,6 @@ function LoadingScreen() {
   )
 }
 
-// ─── Not Found ────────────────────────────────────────────────────────────────
 function NotFoundScreen() {
   return (
     <div className="tp-root">
@@ -53,7 +51,6 @@ function NotFoundScreen() {
   )
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
 export default function TicketPage() {
   const params  = useParams<{ qr_code: string }>()
   const qr_code = params.qr_code
@@ -122,7 +119,6 @@ export default function TicketPage() {
   if (loading) return <LoadingScreen />
   if (!ticket)  return <NotFoundScreen />
 
-  // ── Derived values ──────────────────────────────────────────────────────────
   const tc           = typeConfig[ticket.ticket_type] ?? typeConfig.single
   const isGuest      = ticket.ticket_type === 'guest'
   const isVip        = ticket.ticket_type === 'vip'
@@ -165,20 +161,17 @@ export default function TicketPage() {
     <div className="tp-root" ref={ticketRef}>
       <style>{STYLES}</style>
 
-      {/* ── Hero background ── */}
+      {/* Hero background */}
       <div className="tp-hero-bg" aria-hidden="true">
         {eventImage
           ? <img src={eventImage} alt="" className="tp-hero-img" />
-          : <div
-              className="tp-hero-fallback"
-              style={{ background: `radial-gradient(ellipse at 30% 40%, ${tc.glow} 0%, transparent 60%), linear-gradient(160deg,#0d1117 0%,#1a1f35 100%)` }}
-            />
+          : <div className="tp-hero-fallback" style={{ background: `radial-gradient(ellipse at 30% 40%, ${tc.glow} 0%, transparent 60%), linear-gradient(160deg,#0d1117 0%,#1a1f35 100%)` }} />
         }
         <div className="tp-hero-overlay" />
         <div className="tp-hero-blur" />
       </div>
 
-      {/* ── Header ── */}
+      {/* Header */}
       <header className="tp-header">
         <Link href="/" className="tp-logo">
           <div className="tp-logo-icon">🎟️</div>
@@ -192,7 +185,6 @@ export default function TicketPage() {
         </Link>
       </header>
 
-      {/* ── Main ── */}
       <main className="tp-main">
 
         {/* ══ CARD ══ */}
@@ -208,34 +200,26 @@ export default function TicketPage() {
           {isVip && <div className="tp-vip-strip" />}
 
           {/* ── Image panel ── */}
+          {/*
+            KEY FIX:
+            Mobile/Tablet → tp-card-image-wrap has aspect-ratio: 16/9, no fixed height.
+              The <img> inside is position:absolute inset:0 w:100% h:100% object-fit:cover.
+            Desktop (768px+) → tp-card is display:grid 2-col.
+              tp-card-image-wrap gets align-self:stretch + height:unset, so it fills the row height.
+              The <img> stays absolute inset:0 100%×100% — works perfectly.
+          */}
           <div className="tp-card-image-wrap">
             {eventImage
-              ? (
-                <img
-                  src={eventImage}
-                  alt={ticket.events?.title ?? 'Event'}
-                  className="tp-card-image"
-                />
-              )
-              : (
-                <div
-                  className="tp-card-image-fallback"
-                  style={{ background: `linear-gradient(160deg, #1a2035 0%, ${tc.accent}22 100%)` }}
-                />
-              )
+              ? <img src={eventImage} alt={ticket.events?.title ?? 'Event'} className="tp-card-image" />
+              : <div className="tp-card-image-fallback" style={{ background: `linear-gradient(160deg, #1a2035 0%, ${tc.accent}22 100%)` }} />
             }
             <div className="tp-card-image-shade" />
 
-            {/* Type badge */}
-            <div
-              className="tp-type-badge"
-              style={{ color: tc.accent, borderColor: tc.border, background: tc.bg }}
-            >
+            <div className="tp-type-badge" style={{ color: tc.accent, borderColor: tc.border, background: tc.bg }}>
               <span className="tp-type-badge-dot" style={{ background: tc.accent }} />
               {tc.icon} {tc.label}
             </div>
 
-            {/* Ticket number overlay — desktop */}
             <div className="tp-card-image-number" style={{ color: tc.accent }}>
               #{ticketNumber}
             </div>
@@ -244,7 +228,6 @@ export default function TicketPage() {
           {/* ── Card body ── */}
           <div className="tp-card-body">
 
-            {/* Top: number + status */}
             <div className="tp-card-top">
               <div className="tp-ticket-num-row">
                 <span className="tp-ticket-num-label">TICKET</span>
@@ -263,7 +246,6 @@ export default function TicketPage() {
               </div>
             </div>
 
-            {/* Event info */}
             <div className="tp-event-block">
               <p className="tp-event-meta-label">EVENT</p>
               <h1 className="tp-event-name">{ticket.events?.title ?? '—'}</h1>
@@ -292,13 +274,11 @@ export default function TicketPage() {
 
             <div className="tp-divider" />
 
-            {/* Holder name */}
             <div className="tp-holder-block">
               <p className="tp-field-label">{isGuest ? 'GUEST NAME' : 'TICKET HOLDER'}</p>
               <p className="tp-holder-name">{holderName}</p>
             </div>
 
-            {/* Details grid */}
             <div className="tp-details-grid">
               {detailCells.map(item => (
                 <div key={item.label} className="tp-detail-cell">
@@ -310,7 +290,6 @@ export default function TicketPage() {
               ))}
             </div>
 
-            {/* Contact info */}
             {(email || igHandle) && (
               <div className="tp-contacts">
                 {email && (
@@ -342,7 +321,7 @@ export default function TicketPage() {
 
             <div className="tp-divider" />
 
-            {/* ── QR Code — centred, large ── */}
+            {/* QR — centered large */}
             <div className="tp-qr-center-block">
               <p className="tp-qr-eyebrow">SCAN AT ENTRANCE</p>
               <div className="tp-qr-frame">
@@ -361,12 +340,11 @@ export default function TicketPage() {
               </p>
             </div>
 
-          </div>{/* /tp-card-body */}
-        </div>{/* /tp-card */}
+          </div>
+        </div>
 
         {/* ══ ACTIONS ══ */}
         <div className="tp-actions">
-
           {ticketUrl && (
             <div className="tp-share-box">
               <p className="tp-share-label">SHARE TICKET LINK</p>
@@ -412,7 +390,6 @@ export default function TicketPage() {
           </div>
         </div>
 
-        {/* Footer */}
         <footer className="tp-footer">
           <span className="tp-footer-logo">Ticket<em>Hub</em></span>
           <span className="tp-footer-sep">·</span>
@@ -424,9 +401,6 @@ export default function TicketPage() {
   )
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// STYLES
-// ═══════════════════════════════════════════════════════════════════════════════
 const STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&display=swap');
 
@@ -443,21 +417,17 @@ const STYLES = `
 
   /* ── Hero BG ── */
   .tp-hero-bg {
-    position: fixed; inset: 0; z-index: 0; pointer-events: none;
-    overflow: hidden;
+    position: fixed; inset: 0; z-index: 0;
+    pointer-events: none; overflow: hidden;
   }
   .tp-hero-img {
     position: absolute; inset: 0;
     width: 100%; height: 100%;
-    object-fit: cover;
-    object-position: center center;
+    object-fit: cover; object-position: center center;
     display: block;
     filter: saturate(0.55) brightness(0.28);
   }
-  .tp-hero-fallback {
-    position: absolute; inset: 0;
-    width: 100%; height: 100%;
-  }
+  .tp-hero-fallback { position: absolute; inset: 0; width: 100%; height: 100%; }
   .tp-hero-overlay {
     position: absolute; inset: 0;
     background: linear-gradient(
@@ -505,7 +475,7 @@ const STYLES = `
   }
   .tp-header-back:hover { background: rgba(255,255,255,0.09); color: rgba(255,255,255,0.75); }
 
-  /* ── Main layout ── */
+  /* ── Main ── */
   .tp-main {
     position: relative; z-index: 5;
     max-width: 760px; margin: 0 auto;
@@ -526,9 +496,11 @@ const STYLES = `
       0 0 0 1px rgba(255,255,255,0.04),
       0 24px 64px rgba(0,0,0,0.55),
       0 4px 12px rgba(0,0,0,0.3);
+    /* flex column by default (mobile/tablet) */
+    display: flex;
+    flex-direction: column;
   }
 
-  /* VIP shimmer */
   .tp-vip-strip {
     position: absolute; top: 0; left: 0; right: 0; height: 2.5px; z-index: 3;
     background: linear-gradient(90deg, #b45309, #fbbf24, #fde68a, #fbbf24, #b45309);
@@ -540,15 +512,20 @@ const STYLES = `
     100% { background-position: -200% 0; }
   }
 
-  /* ── Image panel (mobile/tablet: top banner) ── */
+  /*
+   * ── IMAGE WRAP ──
+   * Mobile/Tablet: aspect-ratio drives the height — image always shows full 16:9
+   * Desktop: align-self:stretch makes it fill grid row height automatically
+   */
   .tp-card-image-wrap {
     position: relative;
     width: 100%;
-    /* Mobile: fixed height so image always shows correctly */
-    height: 220px;
-    overflow: hidden;
+    /* aspect-ratio gives the container natural height on mobile/tablet */
+    aspect-ratio: 16 / 9;
     flex-shrink: 0;
+    overflow: hidden;
   }
+  /* The actual <img> fills the container absolutely — works for both layouts */
   .tp-card-image {
     position: absolute; inset: 0;
     width: 100%; height: 100%;
@@ -561,17 +538,15 @@ const STYLES = `
     width: 100%; height: 100%;
   }
   .tp-card-image-shade {
-    position: absolute; inset: 0;
+    position: absolute; inset: 0; z-index: 1;
     background: linear-gradient(
       to bottom,
-      rgba(15,18,28,0.05) 0%,
-      rgba(15,18,28,0.35) 55%,
-      rgba(15,18,28,0.88) 100%
+      rgba(15,18,28,0.0)  0%,
+      rgba(15,18,28,0.3)  55%,
+      rgba(15,18,28,0.85) 100%
     );
-    z-index: 1;
   }
 
-  /* Type badge */
   .tp-type-badge {
     position: absolute; top: 14px; left: 14px; z-index: 2;
     display: inline-flex; align-items: center; gap: 5px;
@@ -584,8 +559,6 @@ const STYLES = `
     width: 6px; height: 6px; border-radius: 50%;
     animation: pulse 2s ease-in-out infinite;
   }
-
-  /* Ticket # on image — desktop only */
   .tp-card-image-number {
     display: none;
     position: absolute; bottom: 14px; right: 14px; z-index: 2;
@@ -598,38 +571,24 @@ const STYLES = `
   .tp-card-body {
     padding: 22px 18px 28px;
     display: flex; flex-direction: column; gap: 18px;
+    flex: 1; /* fills remaining height on desktop */
   }
 
-  /* Top row */
-  .tp-card-top {
-    display: flex; align-items: center; justify-content: space-between; gap: 8px;
-  }
+  .tp-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   .tp-ticket-num-row { display: flex; align-items: baseline; gap: 6px; }
-  .tp-ticket-num-label {
-    font-size: 9px; font-weight: 700; letter-spacing: 2.5px; color: rgba(255,255,255,0.3);
-  }
-  .tp-ticket-num-val {
-    font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 18px; letter-spacing: -0.5px;
-  }
+  .tp-ticket-num-label { font-size: 9px; font-weight: 700; letter-spacing: 2.5px; color: rgba(255,255,255,0.3); }
+  .tp-ticket-num-val { font-family: 'Poppins', sans-serif; font-weight: 900; font-size: 18px; letter-spacing: -0.5px; }
 
-  /* Status pill */
   .tp-status-pill {
     display: inline-flex; align-items: center; gap: 5px;
     padding: 5px 11px; border-radius: 999px;
-    font-size: 9px; font-weight: 800; letter-spacing: 1.5px;
-    flex-shrink: 0;
+    font-size: 9px; font-weight: 800; letter-spacing: 1.5px; flex-shrink: 0;
   }
-  .tp-status-dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    animation: pulse 2s ease-in-out infinite;
-  }
+  .tp-status-dot { width: 6px; height: 6px; border-radius: 50%; animation: pulse 2s ease-in-out infinite; }
   @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
 
-  /* Event block */
   .tp-event-block { display: flex; flex-direction: column; gap: 8px; }
-  .tp-event-meta-label {
-    font-size: 8px; font-weight: 700; letter-spacing: 3px; color: rgba(255,255,255,0.3);
-  }
+  .tp-event-meta-label { font-size: 8px; font-weight: 700; letter-spacing: 3px; color: rgba(255,255,255,0.3); }
   .tp-event-name {
     font-family: 'Poppins', sans-serif; font-weight: 900;
     font-size: clamp(20px, 5vw, 26px); line-height: 1.1;
@@ -644,39 +603,27 @@ const STYLES = `
   .tp-event-date-short { display: none; }
   .tp-event-date-full  { display: inline; }
 
-  /* Divider */
   .tp-divider {
-    height: 1px;
+    height: 1px; flex-shrink: 0;
     background: linear-gradient(to right, transparent, rgba(255,255,255,0.08), transparent);
-    flex-shrink: 0;
   }
 
-  /* Holder */
   .tp-holder-block { display: flex; flex-direction: column; gap: 4px; }
-  .tp-field-label {
-    font-size: 8px; font-weight: 700; letter-spacing: 2.5px;
-    color: rgba(255,255,255,0.3); margin-bottom: 2px;
-  }
+  .tp-field-label { font-size: 8px; font-weight: 700; letter-spacing: 2.5px; color: rgba(255,255,255,0.3); margin-bottom: 2px; }
   .tp-holder-name {
     font-family: 'Poppins', sans-serif; font-weight: 900;
     font-size: clamp(22px, 5.5vw, 30px);
     letter-spacing: -0.5px; color: #fff; line-height: 1.1; word-break: break-word;
   }
 
-  /* Details grid */
   .tp-details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .tp-detail-cell {
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 12px; padding: 10px 12px;
-    min-width: 0;
+    border-radius: 12px; padding: 10px 12px; min-width: 0;
   }
-  .tp-field-val {
-    font-size: 12px; font-weight: 700;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
+  .tp-field-val { font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-  /* Contacts */
   .tp-contacts { display: flex; flex-direction: column; gap: 6px; }
   .tp-contact-item {
     display: inline-flex; align-items: center; gap: 6px;
@@ -688,69 +635,35 @@ const STYLES = `
   .tp-ig-link:hover { color: #ec4899; }
   .tp-ig-link svg { opacity: 1; }
 
-  /* ── QR — centered large block ── */
+  /* ── QR block ── */
   .tp-qr-center-block {
     display: flex; flex-direction: column; align-items: center; gap: 10px;
-    padding: 20px 16px 8px;
+    padding: 16px 16px 4px;
   }
-  .tp-qr-eyebrow {
-    font-size: 9px; font-weight: 800; letter-spacing: 3px;
-    color: rgba(255,255,255,0.35); text-align: center;
-  }
-  .tp-qr-frame {
-    position: relative;
-    /* mobile size */
-    width: 160px; height: 160px;
-    flex-shrink: 0;
-  }
+  .tp-qr-eyebrow { font-size: 9px; font-weight: 800; letter-spacing: 3px; color: rgba(255,255,255,0.35); text-align: center; }
+  .tp-qr-frame { position: relative; width: 160px; height: 160px; flex-shrink: 0; }
   .tp-qr-big-img {
-    width: 100%; height: 100%;
-    border-radius: 14px; display: block;
+    width: 100%; height: 100%; border-radius: 14px; display: block;
     box-shadow: 0 0 0 6px rgba(255,255,255,0.06);
   }
-  .tp-qr-placeholder {
-    width: 100%; height: 100%;
-    background: rgba(255,255,255,0.06); border-radius: 14px;
-  }
-  /* Corner accents */
-  .tp-qr-corner {
-    position: absolute; width: 16px; height: 16px;
-    border-style: solid; border-width: 0;
-  }
+  .tp-qr-placeholder { width: 100%; height: 100%; background: rgba(255,255,255,0.06); border-radius: 14px; }
+  .tp-qr-corner { position: absolute; width: 16px; height: 16px; border-style: solid; border-width: 0; }
   .tp-qr-corner.tl { top:-4px;    left:-4px;   border-top-width:3px;    border-left-width:3px;   border-radius:4px 0 0 0; }
   .tp-qr-corner.tr { top:-4px;    right:-4px;  border-top-width:3px;    border-right-width:3px;  border-radius:0 4px 0 0; }
   .tp-qr-corner.bl { bottom:-4px; left:-4px;   border-bottom-width:3px; border-left-width:3px;   border-radius:0 0 0 4px; }
   .tp-qr-corner.br { bottom:-4px; right:-4px;  border-bottom-width:3px; border-right-width:3px;  border-radius:0 0 4px 0; }
-
-  .tp-qr-hint {
-    font-size: 11.5px; color: rgba(255,255,255,0.3);
-    text-align: center; line-height: 1.5;
-  }
+  .tp-qr-hint { font-size: 11.5px; color: rgba(255,255,255,0.3); text-align: center; line-height: 1.5; }
   .tp-qr-code-str {
-    font-family: monospace; font-size: 9px;
-    color: rgba(255,255,255,0.18);
-    text-align: center; word-break: break-all; line-height: 1.6; letter-spacing: 0.5px;
-    max-width: 280px;
+    font-family: monospace; font-size: 9px; color: rgba(255,255,255,0.18);
+    text-align: center; word-break: break-all; line-height: 1.6; letter-spacing: 0.5px; max-width: 280px;
   }
 
   /* ══ ACTIONS ══ */
   .tp-actions { display: flex; flex-direction: column; gap: 10px; }
-
-  .tp-share-box {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 16px; padding: 14px 16px;
-  }
-  .tp-share-label {
-    font-size: 8px; font-weight: 700; letter-spacing: 2.5px;
-    color: rgba(255,255,255,0.3); margin-bottom: 9px;
-  }
+  .tp-share-box { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 14px 16px; }
+  .tp-share-label { font-size: 8px; font-weight: 700; letter-spacing: 2.5px; color: rgba(255,255,255,0.3); margin-bottom: 9px; }
   .tp-share-row { display: flex; gap: 8px; align-items: center; }
-  .tp-share-url {
-    flex: 1; min-width: 0; font-size: 11px;
-    color: rgba(255,255,255,0.5);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
+  .tp-share-url { flex: 1; min-width: 0; font-size: 11px; color: rgba(255,255,255,0.5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .tp-copy-btn {
     display: inline-flex; align-items: center; gap: 5px;
     padding: 8px 16px; border-radius: 10px;
@@ -760,10 +673,7 @@ const STYLES = `
     cursor: pointer; transition: all 0.2s ease; flex-shrink: 0;
   }
   .tp-copy-btn:hover { background: rgba(46,117,182,0.3); transform: translateY(-1px); }
-  .tp-copy-btn.copied {
-    background: rgba(34,197,94,0.12);
-    border-color: rgba(34,197,94,0.3); color: #4ade80;
-  }
+  .tp-copy-btn.copied { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.3); color: #4ade80; }
 
   .tp-btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
   .tp-btn-primary {
@@ -773,8 +683,7 @@ const STYLES = `
     background: linear-gradient(135deg, #1a3c5e, #2e75b6);
     color: #fff; font-family: 'Poppins', sans-serif;
     font-size: 13px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer;
-    box-shadow: 0 6px 20px rgba(46,117,182,0.35);
-    transition: all 0.2s ease;
+    box-shadow: 0 6px 20px rgba(46,117,182,0.35); transition: all 0.2s ease;
   }
   .tp-btn-primary:hover { box-shadow: 0 8px 28px rgba(46,117,182,0.5); transform: translateY(-1px); }
   .tp-btn-primary:active { transform: translateY(0); }
@@ -782,14 +691,12 @@ const STYLES = `
     flex: 1; min-width: 120px;
     display: flex; align-items: center; justify-content: center; gap: 6px;
     padding: 13px 20px; border-radius: 14px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
     color: rgba(255,255,255,0.45); font-size: 13px; font-weight: 600;
     text-decoration: none; transition: all 0.18s;
   }
   .tp-btn-ghost:hover { background: rgba(255,255,255,0.09); color: rgba(255,255,255,0.75); }
 
-  /* Footer */
   .tp-footer {
     text-align: center; font-size: 11px; color: rgba(255,255,255,0.2);
     display: flex; align-items: center; justify-content: center; gap: 8px; padding-top: 4px;
@@ -798,66 +705,52 @@ const STYLES = `
   .tp-footer-logo em { color: #2e75b6; font-style: normal; }
   .tp-footer-sep { color: rgba(255,255,255,0.15); }
 
-  /* Loading */
-  .tp-loading {
-    min-height: 100vh; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 16px;
-  }
-  .tp-loading-ring {
-    width: 36px; height: 36px; border-radius: 50%;
-    border: 2.5px solid rgba(255,255,255,0.1); border-top-color: #2e75b6;
-    animation: spin 0.8s linear infinite;
-  }
+  .tp-loading { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
+  .tp-loading-ring { width: 36px; height: 36px; border-radius: 50%; border: 2.5px solid rgba(255,255,255,0.1); border-top-color: #2e75b6; animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
   .tp-loading-text { font-size: 11px; font-weight: 600; letter-spacing: 2px; color: rgba(255,255,255,0.3); }
 
-  /* Not Found */
-  .tp-nf {
-    min-height: 100vh; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 12px; padding: 40px 24px; text-align: center;
-  }
-  .tp-nf-icon {
-    width: 64px; height: 64px; border-radius: 50%;
-    background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 24px; color: #ef4444; margin-bottom: 4px;
-  }
+  .tp-nf { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 40px 24px; text-align: center; }
+  .tp-nf-icon { width: 64px; height: 64px; border-radius: 50%; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); display: flex; align-items: center; justify-content: center; font-size: 24px; color: #ef4444; margin-bottom: 4px; }
   .tp-nf-title { font-family: 'Poppins', sans-serif; font-size: 20px; font-weight: 800; color: #f1f5f9; }
   .tp-nf-sub { font-size: 13px; color: rgba(255,255,255,0.35); max-width: 28ch; line-height: 1.6; }
-  .tp-nf-back {
-    margin-top: 8px; color: rgba(255,255,255,0.45); font-size: 13px; text-decoration: none;
-    padding: 10px 22px; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;
-    transition: all 0.18s;
-  }
+  .tp-nf-back { margin-top: 8px; color: rgba(255,255,255,0.45); font-size: 13px; text-decoration: none; padding: 10px 22px; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; transition: all 0.18s; }
   .tp-nf-back:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.75); }
 
   /* ══ TABLET 600px+ ══ */
   @media (min-width: 600px) {
-    .tp-header           { padding: 24px 24px; }
-    .tp-card-body        { padding: 26px 24px 30px; gap: 20px; }
-    .tp-card-image-wrap  { height: 280px; }
-    .tp-event-meta-row   { flex-direction: row; gap: 20px; }
-    .tp-details-grid     { grid-template-columns: repeat(4, 1fr); }
-    .tp-qr-frame         { width: 200px; height: 200px; }
+    .tp-header          { padding: 24px; }
+    .tp-card-body       { padding: 26px 24px 30px; gap: 20px; }
+    .tp-event-meta-row  { flex-direction: row; gap: 20px; }
+    .tp-details-grid    { grid-template-columns: repeat(4, 1fr); }
+    .tp-qr-frame        { width: 200px; height: 200px; }
   }
 
   /* ══ DESKTOP 768px+ ══ */
   @media (min-width: 768px) {
+    /*
+     * KEY: switch card to grid layout.
+     * tp-card-image-wrap gets align-self:stretch so it fills the full row height.
+     * aspect-ratio is overridden to unset — height is now driven by the grid row.
+     * The <img> (position:absolute inset:0 100%x100%) fills whatever height the wrap has.
+     */
     .tp-card {
       display: grid;
-      grid-template-columns: 300px 1fr;
-      min-height: 520px;
+      grid-template-columns: 320px 1fr;
+      flex-direction: unset; /* override the mobile flex-direction:column */
     }
-    /* Image fills left column entirely */
     .tp-card-image-wrap {
-      height: 100%;
-      min-height: 520px;
+      aspect-ratio: unset;   /* disable the 16:9 ratio — grid controls height now */
+      height: unset;
+      align-self: stretch;   /* fill the full grid row height */
+      min-height: 480px;     /* floor so short content doesn't squish the image */
     }
     .tp-card-image-shade {
+      /* horizontal fade into the body on desktop */
       background: linear-gradient(
         to right,
         rgba(15,18,28,0.0)  0%,
-        rgba(15,18,28,0.55) 75%,
+        rgba(15,18,28,0.5)  70%,
         rgba(15,18,28,0.95) 100%
       );
     }
@@ -872,12 +765,11 @@ const STYLES = `
 
   /* ══ NARROW MOBILE <400px ══ */
   @media (max-width: 399px) {
-    .tp-card-image-wrap  { height: 180px; }
-    .tp-card-body        { padding: 18px 14px 22px; gap: 15px; }
+    .tp-card-body       { padding: 18px 14px 22px; gap: 15px; }
     .tp-event-date-full  { display: none; }
     .tp-event-date-short { display: inline; }
-    .tp-qr-frame         { width: 140px; height: 140px; }
-    .tp-btn-row          { flex-direction: column; }
+    .tp-qr-frame        { width: 140px; height: 140px; }
+    .tp-btn-row         { flex-direction: column; }
     .tp-btn-primary, .tp-btn-ghost { min-width: unset; width: 100%; }
   }
 `
