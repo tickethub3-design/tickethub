@@ -117,7 +117,7 @@ export default function TicketPage() {
   }
 
   if (loading) return <LoadingScreen />
-  if (!ticket)  return <NotFoundScreen />
+  if (!ticket) return <NotFoundScreen />
 
   const tc           = typeConfig[ticket.ticket_type] ?? typeConfig.single
   const isGuest      = ticket.ticket_type === 'guest'
@@ -152,7 +152,7 @@ export default function TicketPage() {
 
   const detailCells: { label: string; value: string; color?: string }[] = [
     { label: 'PHONE',                            value: phone },
-    { label: 'TYPE',                             value: tc.label,     color: tc.accent },
+    { label: 'TYPE',                             value: tc.label, color: tc.accent },
     { label: isGuest ? 'ACCESS' : 'AMOUNT PAID', value: isGuest ? 'FREE ACCESS' : `${Number(totalAmount).toLocaleString()} EGP` },
     { label: 'CHECK-IN',                         value: checkinTime ?? '—', color: checkinTime ? '#4ade80' : undefined },
   ]
@@ -186,8 +186,6 @@ export default function TicketPage() {
       </header>
 
       <main className="tp-main">
-
-        {/* ══ CARD ══ */}
         <div
           className="tp-card"
           style={{
@@ -199,15 +197,7 @@ export default function TicketPage() {
         >
           {isVip && <div className="tp-vip-strip" />}
 
-          {/* ── Image panel ── */}
-          {/*
-            KEY FIX:
-            Mobile/Tablet → tp-card-image-wrap has aspect-ratio: 16/9, no fixed height.
-              The <img> inside is position:absolute inset:0 w:100% h:100% object-fit:cover.
-            Desktop (768px+) → tp-card is display:grid 2-col.
-              tp-card-image-wrap gets align-self:stretch + height:unset, so it fills the row height.
-              The <img> stays absolute inset:0 100%×100% — works perfectly.
-          */}
+          {/* Image panel */}
           <div className="tp-card-image-wrap">
             {eventImage
               ? <img src={eventImage} alt={ticket.events?.title ?? 'Event'} className="tp-card-image" />
@@ -225,9 +215,7 @@ export default function TicketPage() {
             </div>
           </div>
 
-          {/* ── Card body ── */}
           <div className="tp-card-body">
-
             <div className="tp-card-top">
               <div className="tp-ticket-num-row">
                 <span className="tp-ticket-num-label">TICKET</span>
@@ -236,9 +224,9 @@ export default function TicketPage() {
               <div
                 className="tp-status-pill"
                 style={{
-                  background: ticket.checked_in ? 'rgba(34,197,94,0.1)'  : 'rgba(56,189,248,0.1)',
-                  border:     `1px solid ${ticket.checked_in ? 'rgba(34,197,94,0.3)' : 'rgba(56,189,248,0.3)'}`,
-                  color:      ticket.checked_in ? '#4ade80' : '#7dd3fc',
+                  background: ticket.checked_in ? 'rgba(34,197,94,0.1)' : 'rgba(56,189,248,0.1)',
+                  border: `1px solid ${ticket.checked_in ? 'rgba(34,197,94,0.3)' : 'rgba(56,189,248,0.3)'}`,
+                  color: ticket.checked_in ? '#4ade80' : '#7dd3fc',
                 }}
               >
                 <span className="tp-status-dot" style={{ background: ticket.checked_in ? '#22c55e' : '#38bdf8' }} />
@@ -321,7 +309,6 @@ export default function TicketPage() {
 
             <div className="tp-divider" />
 
-            {/* QR — centered large */}
             <div className="tp-qr-center-block">
               <p className="tp-qr-eyebrow">SCAN AT ENTRANCE</p>
               <div className="tp-qr-frame">
@@ -339,11 +326,9 @@ export default function TicketPage() {
                 {qr_code.length > 32 ? `${qr_code.slice(0, 32)}…` : qr_code}
               </p>
             </div>
-
           </div>
         </div>
 
-        {/* ══ ACTIONS ══ */}
         <div className="tp-actions">
           {ticketUrl && (
             <div className="tp-share-box">
@@ -395,7 +380,6 @@ export default function TicketPage() {
           <span className="tp-footer-sep">·</span>
           <span>Your ticket to every moment</span>
         </footer>
-
       </main>
     </div>
   )
@@ -496,7 +480,6 @@ const STYLES = `
       0 0 0 1px rgba(255,255,255,0.04),
       0 24px 64px rgba(0,0,0,0.55),
       0 4px 12px rgba(0,0,0,0.3);
-    /* flex column by default (mobile/tablet) */
     display: flex;
     flex-direction: column;
   }
@@ -512,39 +495,32 @@ const STYLES = `
     100% { background-position: -200% 0; }
   }
 
-  /*
-   * ── IMAGE WRAP ──
-   * Mobile/Tablet: aspect-ratio drives the height — image always shows full 16:9
-   * Desktop: align-self:stretch makes it fill grid row height automatically
-   */
+  /* الصورة تاخد نفس ratio بتاعها الطبيعي */
   .tp-card-image-wrap {
     position: relative;
     width: 100%;
-    /* aspect-ratio gives the container natural height on mobile/tablet */
-    aspect-ratio: 16 / 9;
-    flex-shrink: 0;
     overflow: hidden;
+    flex-shrink: 0;
+    background: transparent;
   }
-  /* The actual <img> fills the container absolutely — works for both layouts */
   .tp-card-image {
-    position: absolute; inset: 0;
-    width: 100%; height: 100%;
-    object-fit: cover;
-    object-position: center center;
+    width: 100%;
+    height: auto;
     display: block;
   }
   .tp-card-image-fallback {
-    position: absolute; inset: 0;
-    width: 100%; height: 100%;
+    width: 100%;
+    min-height: 240px;
   }
   .tp-card-image-shade {
     position: absolute; inset: 0; z-index: 1;
     background: linear-gradient(
       to bottom,
-      rgba(15,18,28,0.0)  0%,
-      rgba(15,18,28,0.3)  55%,
-      rgba(15,18,28,0.85) 100%
+      rgba(15,18,28,0.02) 0%,
+      rgba(15,18,28,0.16) 58%,
+      rgba(15,18,28,0.62) 100%
     );
+    pointer-events: none;
   }
 
   .tp-type-badge {
@@ -567,11 +543,10 @@ const STYLES = `
     text-shadow: 0 2px 8px rgba(0,0,0,0.7);
   }
 
-  /* ── Card body ── */
   .tp-card-body {
     padding: 22px 18px 28px;
     display: flex; flex-direction: column; gap: 18px;
-    flex: 1; /* fills remaining height on desktop */
+    flex: 1;
   }
 
   .tp-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
@@ -635,7 +610,6 @@ const STYLES = `
   .tp-ig-link:hover { color: #ec4899; }
   .tp-ig-link svg { opacity: 1; }
 
-  /* ── QR block ── */
   .tp-qr-center-block {
     display: flex; flex-direction: column; align-items: center; gap: 10px;
     padding: 16px 16px 4px;
@@ -648,17 +622,16 @@ const STYLES = `
   }
   .tp-qr-placeholder { width: 100%; height: 100%; background: rgba(255,255,255,0.06); border-radius: 14px; }
   .tp-qr-corner { position: absolute; width: 16px; height: 16px; border-style: solid; border-width: 0; }
-  .tp-qr-corner.tl { top:-4px;    left:-4px;   border-top-width:3px;    border-left-width:3px;   border-radius:4px 0 0 0; }
-  .tp-qr-corner.tr { top:-4px;    right:-4px;  border-top-width:3px;    border-right-width:3px;  border-radius:0 4px 0 0; }
-  .tp-qr-corner.bl { bottom:-4px; left:-4px;   border-bottom-width:3px; border-left-width:3px;   border-radius:0 0 0 4px; }
-  .tp-qr-corner.br { bottom:-4px; right:-4px;  border-bottom-width:3px; border-right-width:3px;  border-radius:0 0 4px 0; }
+  .tp-qr-corner.tl { top:-4px; left:-4px; border-top-width:3px; border-left-width:3px; border-radius:4px 0 0 0; }
+  .tp-qr-corner.tr { top:-4px; right:-4px; border-top-width:3px; border-right-width:3px; border-radius:0 4px 0 0; }
+  .tp-qr-corner.bl { bottom:-4px; left:-4px; border-bottom-width:3px; border-left-width:3px; border-radius:0 0 0 4px; }
+  .tp-qr-corner.br { bottom:-4px; right:-4px; border-bottom-width:3px; border-right-width:3px; border-radius:0 0 4px 0; }
   .tp-qr-hint { font-size: 11.5px; color: rgba(255,255,255,0.3); text-align: center; line-height: 1.5; }
   .tp-qr-code-str {
     font-family: monospace; font-size: 9px; color: rgba(255,255,255,0.18);
     text-align: center; word-break: break-all; line-height: 1.6; letter-spacing: 0.5px; max-width: 280px;
   }
 
-  /* ══ ACTIONS ══ */
   .tp-actions { display: flex; flex-direction: column; gap: 10px; }
   .tp-share-box { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 14px 16px; }
   .tp-share-label { font-size: 8px; font-weight: 700; letter-spacing: 2.5px; color: rgba(255,255,255,0.3); margin-bottom: 9px; }
@@ -717,41 +690,36 @@ const STYLES = `
   .tp-nf-back { margin-top: 8px; color: rgba(255,255,255,0.45); font-size: 13px; text-decoration: none; padding: 10px 22px; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; transition: all 0.18s; }
   .tp-nf-back:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.75); }
 
-  /* ══ TABLET 600px+ ══ */
   @media (min-width: 600px) {
-    .tp-header          { padding: 24px; }
-    .tp-card-body       { padding: 26px 24px 30px; gap: 20px; }
-    .tp-event-meta-row  { flex-direction: row; gap: 20px; }
-    .tp-details-grid    { grid-template-columns: repeat(4, 1fr); }
-    .tp-qr-frame        { width: 200px; height: 200px; }
+    .tp-header         { padding: 24px; }
+    .tp-card-body      { padding: 26px 24px 30px; gap: 20px; }
+    .tp-event-meta-row { flex-direction: row; gap: 20px; }
+    .tp-details-grid   { grid-template-columns: repeat(4, 1fr); }
+    .tp-qr-frame       { width: 200px; height: 200px; }
   }
 
-  /* ══ DESKTOP 768px+ ══ */
   @media (min-width: 768px) {
-    /*
-     * KEY: switch card to grid layout.
-     * tp-card-image-wrap gets align-self:stretch so it fills the full row height.
-     * aspect-ratio is overridden to unset — height is now driven by the grid row.
-     * The <img> (position:absolute inset:0 100%x100%) fills whatever height the wrap has.
-     */
     .tp-card {
       display: grid;
       grid-template-columns: 320px 1fr;
-      flex-direction: unset; /* override the mobile flex-direction:column */
+      align-items: start;
     }
     .tp-card-image-wrap {
-      aspect-ratio: unset;   /* disable the 16:9 ratio — grid controls height now */
-      height: unset;
-      align-self: stretch;   /* fill the full grid row height */
-      min-height: 480px;     /* floor so short content doesn't squish the image */
+      height: 100%;
+    }
+    .tp-card-image {
+      width: 100%;
+      height: auto;
+      min-height: 100%;
+      object-fit: cover;
+      object-position: center top;
     }
     .tp-card-image-shade {
-      /* horizontal fade into the body on desktop */
       background: linear-gradient(
         to right,
-        rgba(15,18,28,0.0)  0%,
-        rgba(15,18,28,0.5)  70%,
-        rgba(15,18,28,0.95) 100%
+        rgba(15,18,28,0.02) 0%,
+        rgba(15,18,28,0.22) 60%,
+        rgba(15,18,28,0.72) 100%
       );
     }
     .tp-card-image-number { display: block; }
@@ -763,13 +731,12 @@ const STYLES = `
     .tp-btn-row           { flex-wrap: nowrap; }
   }
 
-  /* ══ NARROW MOBILE <400px ══ */
   @media (max-width: 399px) {
-    .tp-card-body       { padding: 18px 14px 22px; gap: 15px; }
+    .tp-card-body        { padding: 18px 14px 22px; gap: 15px; }
     .tp-event-date-full  { display: none; }
     .tp-event-date-short { display: inline; }
-    .tp-qr-frame        { width: 140px; height: 140px; }
-    .tp-btn-row         { flex-direction: column; }
+    .tp-qr-frame         { width: 140px; height: 140px; }
+    .tp-btn-row          { flex-direction: column; }
     .tp-btn-primary, .tp-btn-ghost { min-width: unset; width: 100%; }
   }
 `
