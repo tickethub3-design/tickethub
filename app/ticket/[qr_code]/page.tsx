@@ -55,8 +55,8 @@ function NotFoundScreen() {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function TicketPage() {
-  const params    = useParams<{ qr_code: string }>()
-  const qr_code   = params.qr_code
+  const params  = useParams<{ qr_code: string }>()
+  const qr_code = params.qr_code
 
   const [ticket,    setTicket]    = useState<any>(null)
   const [loading,   setLoading]   = useState(true)
@@ -81,8 +81,8 @@ export default function TicketPage() {
         const url = `${window.location.origin}/ticket/${data.qr_code}`
         setTicketUrl(url)
         const qr = await QRCode.toDataURL(url, {
-          width: 280,
-          margin: 1,
+          width: 400,
+          margin: 2,
           color: { dark: '#0f172a', light: '#ffffff' },
         })
         setQrUrl(qr)
@@ -127,10 +127,10 @@ export default function TicketPage() {
   const isGuest      = ticket.ticket_type === 'guest'
   const isVip        = ticket.ticket_type === 'vip'
   const eventImage   = ticket.events?.image_url ?? null
-  const holderName   = ticket.holder_name       || ticket.reservations?.full_name || ticket.reservations?.name || ticket.full_name || '—'
-  const phone        = ticket.holder_phone      || ticket.reservations?.phone     || ticket.phone              || '—'
-  const email        = ticket.holder_email      || ticket.reservations?.email     || ticket.email              || null
-  const instagram    = ticket.holder_instagram  || ticket.reservations?.instagram || ticket.instagram          || null
+  const holderName   = ticket.holder_name      || ticket.reservations?.full_name || ticket.reservations?.name || ticket.full_name || '—'
+  const phone        = ticket.holder_phone     || ticket.reservations?.phone     || ticket.phone              || '—'
+  const email        = ticket.holder_email     || ticket.reservations?.email     || ticket.email              || null
+  const instagram    = ticket.holder_instagram || ticket.reservations?.instagram || ticket.instagram          || null
   const totalAmount  = isGuest ? 0 : (ticket.reservations?.total || ticket.reservations?.total_price || ticket.price_paid || 0)
   const ticketNumber = String(ticket.ticket_number || 0).padStart(3, '0')
 
@@ -155,10 +155,10 @@ export default function TicketPage() {
     : null
 
   const detailCells: { label: string; value: string; color?: string }[] = [
-    { label: 'PHONE',                             value: phone },
-    { label: 'TYPE',                              value: tc.label,      color: tc.accent },
-    { label: isGuest ? 'ACCESS' : 'AMOUNT PAID',  value: isGuest ? 'FREE ACCESS' : `${Number(totalAmount).toLocaleString()} EGP` },
-    { label: 'CHECK-IN TIME',                     value: checkinTime ?? '—', color: checkinTime ? '#4ade80' : undefined },
+    { label: 'PHONE',                            value: phone },
+    { label: 'TYPE',                             value: tc.label,     color: tc.accent },
+    { label: isGuest ? 'ACCESS' : 'AMOUNT PAID', value: isGuest ? 'FREE ACCESS' : `${Number(totalAmount).toLocaleString()} EGP` },
+    { label: 'CHECK-IN',                         value: checkinTime ?? '—', color: checkinTime ? '#4ade80' : undefined },
   ]
 
   return (
@@ -195,7 +195,7 @@ export default function TicketPage() {
       {/* ── Main ── */}
       <main className="tp-main">
 
-        {/* ══ CARD ══════════════════════════════════════════════════════════ */}
+        {/* ══ CARD ══ */}
         <div
           className="tp-card"
           style={{
@@ -210,11 +210,19 @@ export default function TicketPage() {
           {/* ── Image panel ── */}
           <div className="tp-card-image-wrap">
             {eventImage
-              ? <img src={eventImage} alt={ticket.events?.title ?? 'Event'} className="tp-card-image" loading="lazy" />
-              : <div
+              ? (
+                <img
+                  src={eventImage}
+                  alt={ticket.events?.title ?? 'Event'}
+                  className="tp-card-image"
+                />
+              )
+              : (
+                <div
                   className="tp-card-image-fallback"
                   style={{ background: `linear-gradient(160deg, #1a2035 0%, ${tc.accent}22 100%)` }}
                 />
+              )
             }
             <div className="tp-card-image-shade" />
 
@@ -227,7 +235,7 @@ export default function TicketPage() {
               {tc.icon} {tc.label}
             </div>
 
-            {/* Ticket number (desktop overlay on image) */}
+            {/* Ticket number overlay — desktop */}
             <div className="tp-card-image-number" style={{ color: tc.accent }}>
               #{ticketNumber}
             </div>
@@ -245,15 +253,12 @@ export default function TicketPage() {
               <div
                 className="tp-status-pill"
                 style={{
-                  background: ticket.checked_in ? 'rgba(34,197,94,0.1)'   : 'rgba(56,189,248,0.1)',
+                  background: ticket.checked_in ? 'rgba(34,197,94,0.1)'  : 'rgba(56,189,248,0.1)',
                   border:     `1px solid ${ticket.checked_in ? 'rgba(34,197,94,0.3)' : 'rgba(56,189,248,0.3)'}`,
                   color:      ticket.checked_in ? '#4ade80' : '#7dd3fc',
                 }}
               >
-                <span
-                  className="tp-status-dot"
-                  style={{ background: ticket.checked_in ? '#22c55e' : '#38bdf8' }}
-                />
+                <span className="tp-status-dot" style={{ background: ticket.checked_in ? '#22c55e' : '#38bdf8' }} />
                 {ticket.checked_in ? 'CHECKED IN' : 'VALID'}
               </div>
             </div>
@@ -335,33 +340,31 @@ export default function TicketPage() {
               </div>
             )}
 
-            {/* QR section */}
-            <div className="tp-qr-section">
-              <div className="tp-qr-left">
-                <p className="tp-qr-label">SCAN AT ENTRANCE</p>
-                <p className="tp-qr-sub">Present this QR code to the event staff</p>
-              </div>
-              <div className="tp-qr-wrap">
+            <div className="tp-divider" />
+
+            {/* ── QR Code — centred, large ── */}
+            <div className="tp-qr-center-block">
+              <p className="tp-qr-eyebrow">SCAN AT ENTRANCE</p>
+              <div className="tp-qr-frame">
                 {qrUrl
-                  ? <img src={qrUrl} alt="Ticket QR Code" className="tp-qr-img" />
+                  ? <img src={qrUrl} alt="Ticket QR Code" className="tp-qr-big-img" />
                   : <div className="tp-qr-placeholder" />
                 }
-                <div className="tp-qr-corner tl" />
-                <div className="tp-qr-corner tr" />
-                <div className="tp-qr-corner bl" />
-                <div className="tp-qr-corner br" />
+                <div className="tp-qr-corner tl" style={{ borderColor: tc.accent }} />
+                <div className="tp-qr-corner tr" style={{ borderColor: tc.accent }} />
+                <div className="tp-qr-corner bl" style={{ borderColor: tc.accent }} />
+                <div className="tp-qr-corner br" style={{ borderColor: tc.accent }} />
               </div>
+              <p className="tp-qr-hint">Present this QR code to event staff</p>
+              <p className="tp-qr-code-str">
+                {qr_code.length > 32 ? `${qr_code.slice(0, 32)}…` : qr_code}
+              </p>
             </div>
-
-            {/* QR string */}
-            <p className="tp-qr-code-str">
-              {qr_code.length > 28 ? `${qr_code.slice(0, 28)}…` : qr_code}
-            </p>
 
           </div>{/* /tp-card-body */}
         </div>{/* /tp-card */}
 
-        {/* ══ ACTIONS ═══════════════════════════════════════════════════════ */}
+        {/* ══ ACTIONS ══ */}
         <div className="tp-actions">
 
           {ticketUrl && (
@@ -409,7 +412,7 @@ export default function TicketPage() {
           </div>
         </div>
 
-        {/* ── Footer ── */}
+        {/* Footer */}
         <footer className="tp-footer">
           <span className="tp-footer-logo">Ticket<em>Hub</em></span>
           <span className="tp-footer-sep">·</span>
@@ -422,7 +425,7 @@ export default function TicketPage() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// STYLES — scoped with tp- prefix, no Tailwind dependency
+// STYLES
 // ═══════════════════════════════════════════════════════════════════════════════
 const STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800;900&display=swap');
@@ -441,25 +444,35 @@ const STYLES = `
   /* ── Hero BG ── */
   .tp-hero-bg {
     position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    overflow: hidden;
   }
   .tp-hero-img {
+    position: absolute; inset: 0;
     width: 100%; height: 100%;
-    object-fit: cover; object-position: center top;
+    object-fit: cover;
+    object-position: center center;
     display: block;
-    filter: saturate(0.6) brightness(0.3);
+    filter: saturate(0.55) brightness(0.28);
   }
-  .tp-hero-fallback { width: 100%; height: 100%; }
+  .tp-hero-fallback {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+  }
   .tp-hero-overlay {
     position: absolute; inset: 0;
     background: linear-gradient(
       to bottom,
-      rgba(8,9,15,0.55) 0%,
-      rgba(8,9,15,0.3)  30%,
-      rgba(8,9,15,0.75) 70%,
-      rgba(8,9,15,0.98) 100%
+      rgba(8,9,15,0.5)  0%,
+      rgba(8,9,15,0.25) 25%,
+      rgba(8,9,15,0.7)  70%,
+      rgba(8,9,15,0.97) 100%
     );
   }
-  .tp-hero-blur { position: absolute; inset: 0; backdrop-filter: blur(2px); }
+  .tp-hero-blur {
+    position: absolute; inset: 0;
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+  }
 
   /* ── Header ── */
   .tp-header {
@@ -502,22 +515,22 @@ const STYLES = `
 
   /* ══ CARD ══ */
   .tp-card {
-    background: rgba(15,18,28,0.75);
-    backdrop-filter: blur(24px) saturate(1.4);
-    -webkit-backdrop-filter: blur(24px) saturate(1.4);
+    background: rgba(15,18,28,0.78);
+    backdrop-filter: blur(28px) saturate(1.5);
+    -webkit-backdrop-filter: blur(28px) saturate(1.5);
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 24px;
     overflow: hidden;
     position: relative;
     box-shadow:
       0 0 0 1px rgba(255,255,255,0.04),
-      0 24px 64px rgba(0,0,0,0.5),
+      0 24px 64px rgba(0,0,0,0.55),
       0 4px 12px rgba(0,0,0,0.3);
   }
 
-  /* VIP shimmer strip */
+  /* VIP shimmer */
   .tp-vip-strip {
-    position: absolute; top: 0; left: 0; right: 0; height: 2.5px; z-index: 2;
+    position: absolute; top: 0; left: 0; right: 0; height: 2.5px; z-index: 3;
     background: linear-gradient(90deg, #b45309, #fbbf24, #fde68a, #fbbf24, #b45309);
     background-size: 300% 100%;
     animation: vip-shimmer 3s linear infinite;
@@ -527,32 +540,45 @@ const STYLES = `
     100% { background-position: -200% 0; }
   }
 
-  /* Image wrap */
+  /* ── Image panel (mobile/tablet: top banner) ── */
   .tp-card-image-wrap {
-    position: relative; width: 100%;
-    aspect-ratio: 16 / 9;
-    overflow: hidden; flex-shrink: 0;
+    position: relative;
+    width: 100%;
+    /* Mobile: fixed height so image always shows correctly */
+    height: 220px;
+    overflow: hidden;
+    flex-shrink: 0;
   }
-  .tp-card-image, .tp-card-image-fallback {
-    width: 100%; height: 100%; object-fit: cover; display: block;
+  .tp-card-image {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    object-position: center center;
+    display: block;
+  }
+  .tp-card-image-fallback {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
   }
   .tp-card-image-shade {
     position: absolute; inset: 0;
     background: linear-gradient(
       to bottom,
-      transparent 0%,
-      rgba(15,18,28,0.4) 60%,
-      rgba(15,18,28,0.9) 100%
+      rgba(15,18,28,0.05) 0%,
+      rgba(15,18,28,0.35) 55%,
+      rgba(15,18,28,0.88) 100%
     );
+    z-index: 1;
   }
 
   /* Type badge */
   .tp-type-badge {
-    position: absolute; top: 14px; left: 14px;
+    position: absolute; top: 14px; left: 14px; z-index: 2;
     display: inline-flex; align-items: center; gap: 5px;
     padding: 5px 12px; border-radius: 999px; border: 1px solid;
     font-size: 9px; font-weight: 800; letter-spacing: 1.8px;
     backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
   .tp-type-badge-dot {
     width: 6px; height: 6px; border-radius: 50%;
@@ -562,15 +588,15 @@ const STYLES = `
   /* Ticket # on image — desktop only */
   .tp-card-image-number {
     display: none;
-    position: absolute; bottom: 14px; right: 14px;
+    position: absolute; bottom: 14px; right: 14px; z-index: 2;
     font-family: 'Poppins', sans-serif;
-    font-weight: 900; font-size: 18px; letter-spacing: -1px;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+    font-weight: 900; font-size: 20px; letter-spacing: -1px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.7);
   }
 
-  /* Card body */
+  /* ── Card body ── */
   .tp-card-body {
-    padding: 22px 18px 24px;
+    padding: 22px 18px 28px;
     display: flex; flex-direction: column; gap: 18px;
   }
 
@@ -591,6 +617,7 @@ const STYLES = `
     display: inline-flex; align-items: center; gap: 5px;
     padding: 5px 11px; border-radius: 999px;
     font-size: 9px; font-weight: 800; letter-spacing: 1.5px;
+    flex-shrink: 0;
   }
   .tp-status-dot {
     width: 6px; height: 6px; border-radius: 50%;
@@ -605,7 +632,7 @@ const STYLES = `
   }
   .tp-event-name {
     font-family: 'Poppins', sans-serif; font-weight: 900;
-    font-size: clamp(20px, 5vw, 28px); line-height: 1.1;
+    font-size: clamp(20px, 5vw, 26px); line-height: 1.1;
     letter-spacing: -0.5px; color: #f1f5f9;
   }
   .tp-event-meta-row { display: flex; flex-direction: column; gap: 5px; }
@@ -621,6 +648,7 @@ const STYLES = `
   .tp-divider {
     height: 1px;
     background: linear-gradient(to right, transparent, rgba(255,255,255,0.08), transparent);
+    flex-shrink: 0;
   }
 
   /* Holder */
@@ -641,8 +669,12 @@ const STYLES = `
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.07);
     border-radius: 12px; padding: 10px 12px;
+    min-width: 0;
   }
-  .tp-field-val { font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tp-field-val {
+    font-size: 12px; font-weight: 700;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
 
   /* Contacts */
   .tp-contacts { display: flex; flex-direction: column; gap: 6px; }
@@ -656,38 +688,49 @@ const STYLES = `
   .tp-ig-link:hover { color: #ec4899; }
   .tp-ig-link svg { opacity: 1; }
 
-  /* QR section */
-  .tp-qr-section {
-    display: flex; align-items: center; gap: 20px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 16px; padding: 18px;
+  /* ── QR — centered large block ── */
+  .tp-qr-center-block {
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    padding: 20px 16px 8px;
   }
-  .tp-qr-left { flex: 1; min-width: 0; }
-  .tp-qr-label {
-    font-size: 9px; font-weight: 800; letter-spacing: 2.5px;
-    color: rgba(255,255,255,0.45); margin-bottom: 5px;
+  .tp-qr-eyebrow {
+    font-size: 9px; font-weight: 800; letter-spacing: 3px;
+    color: rgba(255,255,255,0.35); text-align: center;
   }
-  .tp-qr-sub { font-size: 11.5px; color: rgba(255,255,255,0.3); line-height: 1.5; }
-  .tp-qr-wrap { position: relative; flex-shrink: 0; width: 110px; height: 110px; }
-  .tp-qr-img { width: 100%; height: 100%; border-radius: 10px; display: block; }
+  .tp-qr-frame {
+    position: relative;
+    /* mobile size */
+    width: 160px; height: 160px;
+    flex-shrink: 0;
+  }
+  .tp-qr-big-img {
+    width: 100%; height: 100%;
+    border-radius: 14px; display: block;
+    box-shadow: 0 0 0 6px rgba(255,255,255,0.06);
+  }
   .tp-qr-placeholder {
     width: 100%; height: 100%;
-    background: rgba(255,255,255,0.05); border-radius: 10px;
+    background: rgba(255,255,255,0.06); border-radius: 14px;
   }
+  /* Corner accents */
   .tp-qr-corner {
-    position: absolute; width: 12px; height: 12px;
-    border-style: solid; border-color: var(--accent, #3b82f6); border-width: 0;
+    position: absolute; width: 16px; height: 16px;
+    border-style: solid; border-width: 0;
   }
-  .tp-qr-corner.tl { top:-2px;    left:-2px;   border-top-width:2.5px;    border-left-width:2.5px;   border-radius:3px 0 0 0; }
-  .tp-qr-corner.tr { top:-2px;    right:-2px;  border-top-width:2.5px;    border-right-width:2.5px;  border-radius:0 3px 0 0; }
-  .tp-qr-corner.bl { bottom:-2px; left:-2px;   border-bottom-width:2.5px; border-left-width:2.5px;   border-radius:0 0 0 3px; }
-  .tp-qr-corner.br { bottom:-2px; right:-2px;  border-bottom-width:2.5px; border-right-width:2.5px;  border-radius:0 0 3px 0; }
+  .tp-qr-corner.tl { top:-4px;    left:-4px;   border-top-width:3px;    border-left-width:3px;   border-radius:4px 0 0 0; }
+  .tp-qr-corner.tr { top:-4px;    right:-4px;  border-top-width:3px;    border-right-width:3px;  border-radius:0 4px 0 0; }
+  .tp-qr-corner.bl { bottom:-4px; left:-4px;   border-bottom-width:3px; border-left-width:3px;   border-radius:0 0 0 4px; }
+  .tp-qr-corner.br { bottom:-4px; right:-4px;  border-bottom-width:3px; border-right-width:3px;  border-radius:0 0 4px 0; }
 
+  .tp-qr-hint {
+    font-size: 11.5px; color: rgba(255,255,255,0.3);
+    text-align: center; line-height: 1.5;
+  }
   .tp-qr-code-str {
     font-family: monospace; font-size: 9px;
-    color: rgba(255,255,255,0.2);
+    color: rgba(255,255,255,0.18);
     text-align: center; word-break: break-all; line-height: 1.6; letter-spacing: 0.5px;
+    max-width: 280px;
   }
 
   /* ══ ACTIONS ══ */
@@ -790,50 +833,51 @@ const STYLES = `
 
   /* ══ TABLET 600px+ ══ */
   @media (min-width: 600px) {
-    .tp-header        { padding: 24px 24px; }
-    .tp-card-body     { padding: 26px 24px 28px; gap: 20px; }
-    .tp-card-image-wrap { aspect-ratio: 21 / 9; }
-    .tp-event-meta-row  { flex-direction: row; gap: 20px; }
-    .tp-details-grid    { grid-template-columns: repeat(4, 1fr); }
-    .tp-qr-wrap         { width: 130px; height: 130px; }
+    .tp-header           { padding: 24px 24px; }
+    .tp-card-body        { padding: 26px 24px 30px; gap: 20px; }
+    .tp-card-image-wrap  { height: 280px; }
+    .tp-event-meta-row   { flex-direction: row; gap: 20px; }
+    .tp-details-grid     { grid-template-columns: repeat(4, 1fr); }
+    .tp-qr-frame         { width: 200px; height: 200px; }
   }
 
   /* ══ DESKTOP 768px+ ══ */
   @media (min-width: 768px) {
     .tp-card {
       display: grid;
-      grid-template-columns: 280px 1fr;
-      min-height: 500px;
+      grid-template-columns: 300px 1fr;
+      min-height: 520px;
     }
+    /* Image fills left column entirely */
     .tp-card-image-wrap {
-      aspect-ratio: unset;
       height: 100%;
+      min-height: 520px;
     }
     .tp-card-image-shade {
       background: linear-gradient(
         to right,
-        transparent 0%,
-        rgba(15,18,28,0.6) 80%,
+        rgba(15,18,28,0.0)  0%,
+        rgba(15,18,28,0.55) 75%,
         rgba(15,18,28,0.95) 100%
       );
     }
     .tp-card-image-number { display: block; }
-    .tp-card-body  { padding: 28px 28px 28px 24px; }
-    .tp-event-name { font-size: clamp(22px, 2.8vw, 28px); }
-    .tp-holder-name { font-size: clamp(24px, 3vw, 32px); }
-    .tp-details-grid { grid-template-columns: repeat(2, 1fr); }
-    .tp-qr-wrap { width: 120px; height: 120px; }
-    .tp-btn-row { flex-wrap: nowrap; }
+    .tp-card-body         { padding: 28px 28px 32px 24px; }
+    .tp-event-name        { font-size: clamp(20px, 2.5vw, 26px); }
+    .tp-holder-name       { font-size: clamp(22px, 2.8vw, 30px); }
+    .tp-details-grid      { grid-template-columns: repeat(2, 1fr); }
+    .tp-qr-frame          { width: 220px; height: 220px; }
+    .tp-btn-row           { flex-wrap: nowrap; }
   }
 
   /* ══ NARROW MOBILE <400px ══ */
   @media (max-width: 399px) {
-    .tp-card-body { padding: 18px 16px 20px; gap: 15px; }
+    .tp-card-image-wrap  { height: 180px; }
+    .tp-card-body        { padding: 18px 14px 22px; gap: 15px; }
     .tp-event-date-full  { display: none; }
     .tp-event-date-short { display: inline; }
-    .tp-qr-section  { flex-direction: column; align-items: flex-start; gap: 14px; }
-    .tp-qr-wrap     { width: 100px; height: 100px; }
-    .tp-btn-row     { flex-direction: column; }
+    .tp-qr-frame         { width: 140px; height: 140px; }
+    .tp-btn-row          { flex-direction: column; }
     .tp-btn-primary, .tp-btn-ghost { min-width: unset; width: 100%; }
   }
 `
