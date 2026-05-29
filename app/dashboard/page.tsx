@@ -23,6 +23,7 @@ export default function DashboardPage() {
   const router = useRouter()
   const [role, setRole] = useState('')
   const [username, setUsername] = useState('')
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
@@ -71,11 +72,26 @@ export default function DashboardPage() {
     })
   }
 
-  const logout = () => {
+  const clearAdminLocalData = () => {
     ;['admin_auth', 'admin_role', 'admin_username', 'admin_id'].forEach(k =>
       localStorage.removeItem(k)
     )
-    router.push('/dashboard/login')
+  }
+
+  const logout = async () => {
+    if (isLoggingOut) return
+    setIsLoggingOut(true)
+
+    try {
+      const { error } = await supabase.auth.signOut({ scope: 'global' })
+
+      if (error) {
+        console.error('Supabase global logout error:', error.message)
+      }
+    } finally {
+      clearAdminLocalData()
+      router.replace('/dashboard/login')
+    }
   }
 
   const can = (page: string) => (roleAccess[role] || []).includes(page)
@@ -108,7 +124,13 @@ export default function DashboardPage() {
         flexDirection: 'column',
       }}
     >
-      <TopBar title="Dashboard" role={role} roleBadgeColor={badge} username={username} onLogout={logout} />
+      <TopBar
+        title="Dashboard"
+        role={role}
+        roleBadgeColor={badge}
+        username={username}
+        onLogout={logout}
+      />
 
       <div style={{ flex: 1, maxWidth: 1200, margin: '0 auto', width: '100%', padding: '96px 24px 80px' }}>
         <div style={{ marginBottom: 40 }}>
