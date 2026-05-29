@@ -995,7 +995,7 @@ export default function EventPage() {
                 info={single}
                 onClick={scrollToBooking}
                 accent="#60a5fa"
-                helper="Single ticket access with the currently active wave price."
+                helper="Single ticket access without girl"
               />
             )}
 
@@ -1005,7 +1005,7 @@ export default function EventPage() {
                 info={standing}
                 onClick={scrollToBooking}
                 accent="#4ade80"
-                helper="Standard event access with the currently active wave price."
+                helper="Standard event access with couple"
               />
             )}
 
