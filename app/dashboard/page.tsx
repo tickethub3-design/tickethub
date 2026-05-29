@@ -70,8 +70,9 @@ export default function DashboardPage() {
     const isAdminAuth = localStorage.getItem('admin_auth')
     const savedRole = localStorage.getItem('admin_role')
     const savedUsername = localStorage.getItem('admin_username')
+    const adminId = localStorage.getItem('admin_id')
 
-    if (isAdminAuth !== 'true') {
+    if (isAdminAuth !== 'true' || !adminId) {
       router.replace('/dashboard/login')
       return
     }
@@ -79,6 +80,22 @@ export default function DashboardPage() {
     setRole(savedRole || 'gate')
     setUsername(savedUsername || 'Admin')
     loadStats()
+
+    const interval = setInterval(async () => {
+      const { data, error } = await supabase
+        .from('admin_users')
+        .select('id, is_revoked')
+        .eq('id', adminId)
+        .limit(1)
+        .maybeSingle()
+
+      if (error || !data || data.is_revoked) {
+        clearAdminLocalData()
+        router.replace('/dashboard/login')
+      }
+    }, 3000)
+
+    return () => clearInterval(interval)
   }, [router])
 
   const logout = () => {
