@@ -35,24 +35,17 @@ export default function DashboardPage() {
     tax: 0,
   })
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    if (localStorage.getItem('admin_auth') !== 'true') {
-      router.push('/dashboard/login')
-      return
-    }
-
-    setRole(localStorage.getItem('admin_role') || 'gate')
-    setUsername(localStorage.getItem('admin_username') || 'Admin')
-    loadStats()
-  }, [])
+  const clearAdminLocalData = () => {
+    ;['admin_auth', 'admin_role', 'admin_username', 'admin_id'].forEach((k) =>
+      localStorage.removeItem(k)
+    )
+  }
 
   const loadStats = async () => {
     const { data } = await supabase.from('reservations').select('*, events(price)')
     if (!data) return
 
-    const confirmed = data.filter(r => r.status === 'confirmed')
+    const confirmed = data.filter((r) => r.status === 'confirmed')
     const totalRevenue = confirmed.reduce((sum, r) => sum + (r.total_price || 0), 0)
 
     const TAX_RATE = 0.08
@@ -60,22 +53,37 @@ export default function DashboardPage() {
 
     setStats({
       total: data.length,
-      pending: data.filter(r => r.status === 'pending').length,
+      pending: data.filter((r) => r.status === 'pending').length,
       confirmed: confirmed.length,
-      rejected: data.filter(r => r.status === 'rejected').length,
-      awaiting: data.filter(r => r.status === 'awaiting_payment').length,
-      review: data.filter(r => r.status === 'payment_review').length,
+      rejected: data.filter((r) => r.status === 'rejected').length,
+      awaiting: data.filter((r) => r.status === 'awaiting_payment').length,
+      review: data.filter((r) => r.status === 'payment_review').length,
       tickets: confirmed.reduce((sum, r) => sum + (r.num_people || 0), 0),
       revenue: revenueBeforeTax,
       tax: totalRevenue - revenueBeforeTax,
     })
   }
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const isAdminAuth = localStorage.getItem('admin_auth')
+    const savedRole = localStorage.getItem('admin_role')
+    const savedUsername = localStorage.getItem('admin_username')
+
+    if (isAdminAuth !== 'true') {
+      router.replace('/dashboard/login')
+      return
+    }
+
+    setRole(savedRole || 'gate')
+    setUsername(savedUsername || 'Admin')
+    loadStats()
+  }, [router])
+
   const logout = () => {
-    ;['admin_auth', 'admin_role', 'admin_username', 'admin_id'].forEach(k =>
-      localStorage.removeItem(k)
-    )
-    router.push('/dashboard/login')
+    clearAdminLocalData()
+    router.replace('/dashboard/login')
   }
 
   const can = (page: string) => (roleAccess[role] || []).includes(page)
@@ -86,7 +94,7 @@ export default function DashboardPage() {
     { key: 'reservations', href: '/dashboard/reservations', icon: '📋', title: 'Reservations', sub: 'View & manage all bookings' },
     { key: 'verify', href: '/dashboard/verify', icon: '🔍', title: 'Verify Entry', sub: 'Scan QR codes at the gate' },
     { key: 'users', href: '/dashboard/users', icon: '👥', title: 'Manage Users', sub: 'Add & control admin access' },
-  ].filter(c => can(c.key))
+  ].filter((c) => can(c.key))
 
   const statCards = [
     { label: 'Total Bookings', value: stats.total, color: '#fff' },
@@ -108,11 +116,19 @@ export default function DashboardPage() {
         flexDirection: 'column',
       }}
     >
-      <TopBar title="Dashboard" role={role} roleBadgeColor={badge} username={username} onLogout={logout} />
+      <TopBar
+        title="Dashboard"
+        role={role}
+        roleBadgeColor={badge}
+        username={username}
+        onLogout={logout}
+      />
 
       <div style={{ flex: 1, maxWidth: 1200, margin: '0 auto', width: '100%', padding: '96px 24px 80px' }}>
         <div style={{ marginBottom: 40 }}>
-          <span style={{ color: '#2E75B6', fontSize: 11, fontWeight: 700, letterSpacing: '2.5px' }}>OVERVIEW</span>
+          <span style={{ color: '#2E75B6', fontSize: 11, fontWeight: 700, letterSpacing: '2.5px' }}>
+            OVERVIEW
+          </span>
           <h1
             style={{
               fontFamily: 'Poppins, sans-serif',
@@ -137,7 +153,7 @@ export default function DashboardPage() {
                 marginBottom: 14,
               }}
             >
-              {statCards.map(c => (
+              {statCards.map((c) => (
                 <div
                   key={c.label}
                   style={{
@@ -221,7 +237,7 @@ export default function DashboardPage() {
                       value: `${stats.tax.toLocaleString()} EGP`,
                       color: '#E74C3C',
                     },
-                  ].map(r => (
+                  ].map((r) => (
                     <div
                       key={r.label}
                       style={{
@@ -268,7 +284,7 @@ export default function DashboardPage() {
             gap: 16,
           }}
         >
-          {navCards.map(item => (
+          {navCards.map((item) => (
             <Link key={item.href} href={item.href} style={{ textDecoration: 'none' }}>
               <div
                 style={{
@@ -279,14 +295,14 @@ export default function DashboardPage() {
                   transition: 'all 0.25s',
                   cursor: 'pointer',
                 }}
-                onMouseEnter={e => {
+                onMouseEnter={(e) => {
                   const el = e.currentTarget as HTMLDivElement
                   el.style.borderColor = 'rgba(46,117,182,0.4)'
                   el.style.transform = 'translateY(-4px)'
                   el.style.background = 'rgba(46,117,182,0.06)'
                   el.style.boxShadow = '0 16px 40px rgba(0,0,0,0.3)'
                 }}
-                onMouseLeave={e => {
+                onMouseLeave={(e) => {
                   const el = e.currentTarget as HTMLDivElement
                   el.style.borderColor = 'rgba(46,117,182,0.1)'
                   el.style.transform = 'translateY(0)'
@@ -306,7 +322,9 @@ export default function DashboardPage() {
                 >
                   {item.title}
                 </h2>
-                <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13, margin: 0 }}>{item.sub}</p>
+                <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13, margin: 0 }}>
+                  {item.sub}
+                </p>
               </div>
             </Link>
           ))}
