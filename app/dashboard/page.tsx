@@ -23,7 +23,7 @@ export default function DashboardPage() {
   const router = useRouter()
   const [role, setRole] = useState('')
   const [username, setUsername] = useState('')
-  const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [isLoggingOutAll, setIsLoggingOutAll] = useState(false)
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
@@ -78,19 +78,28 @@ export default function DashboardPage() {
     )
   }
 
-  const logout = async () => {
-    if (isLoggingOut) return
-    setIsLoggingOut(true)
+  const logout = () => {
+    clearAdminLocalData()
+    router.push('/dashboard/login')
+  }
+
+  const logoutFromAllDevices = async () => {
+    if (isLoggingOutAll) return
+    setIsLoggingOutAll(true)
 
     try {
       const { error } = await supabase.auth.signOut({ scope: 'global' })
 
       if (error) {
-        console.error('Supabase global logout error:', error.message)
+        console.error('Logout from all devices failed:', error.message)
+        alert('حصل خطأ أثناء تسجيل الخروج من كل الأجهزة')
+        return
       }
-    } finally {
+
       clearAdminLocalData()
       router.replace('/dashboard/login')
+    } finally {
+      setIsLoggingOutAll(false)
     }
   }
 
@@ -124,17 +133,13 @@ export default function DashboardPage() {
         flexDirection: 'column',
       }}
     >
-      <TopBar
-        title="Dashboard"
-        role={role}
-        roleBadgeColor={badge}
-        username={username}
-        onLogout={logout}
-      />
+      <TopBar title="Dashboard" role={role} roleBadgeColor={badge} username={username} onLogout={logout} />
 
       <div style={{ flex: 1, maxWidth: 1200, margin: '0 auto', width: '100%', padding: '96px 24px 80px' }}>
         <div style={{ marginBottom: 40 }}>
-          <span style={{ color: '#2E75B6', fontSize: 11, fontWeight: 700, letterSpacing: '2.5px' }}>OVERVIEW</span>
+          <span style={{ color: '#2E75B6', fontSize: 11, fontWeight: 700, letterSpacing: '2.5px' }}>
+            OVERVIEW
+          </span>
           <h1
             style={{
               fontFamily: 'Poppins, sans-serif',
@@ -147,6 +152,27 @@ export default function DashboardPage() {
           >
             Dashboard
           </h1>
+
+          {role === 'admin' && (
+            <button
+              onClick={logoutFromAllDevices}
+              disabled={isLoggingOutAll}
+              style={{
+                marginTop: 16,
+                background: '#E74C3C',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 12,
+                padding: '12px 18px',
+                fontSize: 14,
+                fontWeight: 700,
+                cursor: isLoggingOutAll ? 'not-allowed' : 'pointer',
+                opacity: isLoggingOutAll ? 0.7 : 1,
+              }}
+            >
+              {isLoggingOutAll ? 'Logging out...' : 'Log out from all devices'}
+            </button>
+          )}
         </div>
 
         {(role === 'admin' || role === 'staff') && (
