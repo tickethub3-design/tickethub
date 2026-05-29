@@ -428,15 +428,7 @@ export default function HomePage() {
             padding: '28px 24px',
           }}
         >
-          <div style={{ marginBottom: 26 }}>
-            <span style={{ color: '#2E75B6', fontSize: 11, fontWeight: 700, letterSpacing: '2.5px' }}>WHY TICKETHUB</span>
-            <h2 style={{ fontFamily: 'Poppins, sans-serif', fontWeight: 700, fontSize: 'clamp(22px, 3vw, 30px)', color: '#fff', margin: '10px 0 10px' }}>
-              A clearer experience from browse to booking
-            </h2>
-            <p style={{ color: 'rgba(255,255,255,0.46)', fontSize: 14, lineHeight: 1.8, maxWidth: 640, margin: 0 }}>
-              TicketHub is being shaped to make every part of the experience clearer, faster, and more professional for nightlife and premium live events.
-            </p>
-          </div>
+        
 
           <div className="value-grid">
             {[
