@@ -64,6 +64,23 @@ export default function DashboardPage() {
     })
   }
 
+  // 1️⃣ مراقبة تغيير localStorage من التابات الأخرى
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === 'admin_force_logout_at') {
+        clearAdminLocalData()
+        router.replace('/dashboard/login')
+      }
+    }
+
+    window.addEventListener('storage', handleStorage)
+
+    return () => window.removeEventListener('storage', handleStorage)
+  }, [router])
+
+  // 2️⃣ التحقق المبدئي عند فتح الصفحة
   useEffect(() => {
     if (typeof window === 'undefined') return
 
@@ -80,23 +97,15 @@ export default function DashboardPage() {
     setRole(savedRole || 'gate')
     setUsername(savedUsername || 'Admin')
     loadStats()
-
-    const interval = setInterval(async () => {
-      const { data, error } = await supabase
-        .from('admin_users')
-        .select('id, is_revoked')
-        .eq('id', adminId)
-        .limit(1)
-        .maybeSingle()
-
-      if (error || !data || data.is_revoked) {
-        clearAdminLocalData()
-        router.replace('/dashboard/login')
-      }
-    }, 3000)
-
-    return () => clearInterval(interval)
   }, [router])
+
+  // 3️⃣ logout من كل الأجهزة
+  const logoutFromAllDevices = () => {
+    const forceLogoutValue = Date.now().toString()
+    localStorage.setItem('admin_force_logout_at', forceLogoutValue)
+    clearAdminLocalData()
+    router.replace('/dashboard/login')
+  }
 
   const logout = () => {
     clearAdminLocalData()
@@ -138,7 +147,7 @@ export default function DashboardPage() {
         role={role}
         roleBadgeColor={badge}
         username={username}
-        onLogout={logout}
+        onLogout={logoutFromAllDevices}
       />
 
       <div style={{ flex: 1, maxWidth: 1200, margin: '0 auto', width: '100%', padding: '96px 24px 80px' }}>
@@ -351,4 +360,4 @@ export default function DashboardPage() {
       <Footer />
     </main>
   )
-}
+      }
