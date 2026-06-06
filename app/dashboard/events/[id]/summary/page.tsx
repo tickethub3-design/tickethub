@@ -667,7 +667,7 @@ export default function EventSummaryPage() {
             { label: 'VIP', value: counts.vip, color: '#fbbf24', border: 'rgba(251,191,36,0.35)' },
             { label: 'TOTAL REVENUE', value: `${totalRevenue.toLocaleString()} EGP`, color: '#10b981', border: 'rgba(16,185,129,0.35)' },
             { label: 'SUBTOTAL', value: `${subtotalRevenue.toLocaleString()} EGP`, color: '#93c5fd', border: 'rgba(147,197,253,0.35)' },
-            { label: 'TAX', value: `${totalTax.toLocaleString()} EGP`, color: '#f87171', border: 'rgba(248,113,113,0.35)' },
+            { label: 'Site Service Fees', value: `${totalTax.toLocaleString()} EGP`, color: '#f87171', border: 'rgba(248,113,113,0.35)' },
           ].map(card => (
             <div
               key={card.label}
