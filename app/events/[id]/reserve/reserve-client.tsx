@@ -928,7 +928,7 @@ export default function ReserveClient({ id }: { id: string }) {
                         </div>
 
                         <div style={{ display: 'flex', justifyContent: 'space-between', color: '#999' }}>
-                          <span>Tax (8%)</span>
+                          <span>Site Service Fees (8%)</span>
                           <span>{getTax()} EGP</span>
                         </div>
 
