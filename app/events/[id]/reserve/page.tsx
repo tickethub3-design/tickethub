@@ -1087,7 +1087,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-                  <span style={{ color: 'rgba(255,255,255,0.56)', fontSize: 14 }}>Tax (8%)</span>
+                  <span style={{ color: 'rgba(255,255,255,0.56)', fontSize: 14 }}>Site Service Fees (8%)</span>
                   <span style={{ color: 'rgba(255,255,255,0.78)', fontSize: 14 }}>{getTax()} EGP</span>
                 </div>
 
