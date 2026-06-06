@@ -253,13 +253,13 @@ export default function DashboardPage() {
                     },
                     {
                       icon: '💰',
-                      label: 'Revenue (before tax)',
+                      label: 'Revenue (beforee service fees)',
                       value: `${stats.revenue.toLocaleString()} EGP`,
                       color: '#27AE60',
                     },
                     {
                       icon: '🏛️',
-                      label: 'VAT Collected (8%)',
+                      label: 'Site Service Fees (8%)',
                       value: `${stats.tax.toLocaleString()} EGP`,
                       color: '#E74C3C',
                     },
@@ -360,4 +360,4 @@ export default function DashboardPage() {
       <Footer />
     </main>
   )
-      }
+}
