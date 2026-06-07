@@ -3,18 +3,27 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
-const roles = ['admin', 'staff', 'gate']
+const roles = ['admin', 'staff', 'gate', 'viewer']
 
 const roleColors: Record<string, string> = {
-  admin: '#2E75B6',
-  staff: '#8b5cf6',
-  gate:  '#27AE60',
+  admin:  '#2E75B6',
+  staff:  '#8b5cf6',
+  gate:   '#27AE60',
+  viewer: '#94a3b8',
 }
 
 const roleDesc: Record<string, string> = {
-  admin: 'Full access — all pages + users + revenue',
-  staff: 'Reservations + verify entry',
-  gate:  'Verify entry only',
+  admin:  'Full access — all pages + users + revenue',
+  staff:  'Reservations + verify entry',
+  gate:   'Verify entry only',
+  viewer: 'View only — no actions allowed',
+}
+
+const roleIcon: Record<string, string> = {
+  admin:  '👑',
+  staff:  '🛡️',
+  gate:   '🚪',
+  viewer: '👁️',
 }
 
 const inputStyle: React.CSSProperties = {
@@ -125,8 +134,8 @@ export default function UsersPage() {
           </button>
         </div>
 
-        {/* Role Legend */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 28 }}>
+        {/* Role Legend — 4 columns */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 28 }}>
           {roles.map(r => (
             <div key={r} style={{ background: 'rgba(255,255,255,0.02)', border: `1px solid ${roleColors[r]}20`, borderRadius: 12, padding: '14px 16px' }}>
               <span style={{ background: `${roleColors[r]}15`, border: `1px solid ${roleColors[r]}35`, color: roleColors[r], fontSize: 9, fontWeight: 700, letterSpacing: '2px', padding: '3px 10px', borderRadius: 50, display: 'inline-block', marginBottom: 8 }}>
@@ -195,7 +204,7 @@ export default function UsersPage() {
               {/* Username */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <div style={{ width: 32, height: 32, borderRadius: 8, background: `${roleColors[u.role] || '#555'}15`, border: `1px solid ${roleColors[u.role] || '#555'}25`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0 }}>
-                  {u.role === 'admin' ? '👑' : u.role === 'staff' ? '🛡️' : '🚪'}
+                  {roleIcon[u.role] ?? '👤'}
                 </div>
                 <div>
                   <p style={{ color: '#fff', fontSize: 14, fontWeight: 600, margin: 0 }}>{u.username}</p>
