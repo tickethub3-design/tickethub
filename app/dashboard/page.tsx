@@ -8,15 +8,17 @@ import TopBar from '@/app/components/TopBar'
 import Footer from '@/app/components/Footer'
 
 const roleAccess: Record<string, string[]> = {
-  admin: ['events', 'reservations', 'verify', 'users'],
-  staff: ['reservations', 'verify'],
-  gate: ['verify'],
+  admin:  ['events', 'reservations', 'verify', 'users'],
+  staff:  ['reservations', 'verify'],
+  gate:   ['verify'],
+  viewer: ['reservations', 'events'],
 }
 
 const roleBadge: Record<string, { color: string; bg: string }> = {
-  admin: { color: '#2E75B6', bg: 'rgba(46,117,182,0.12)' },
-  staff: { color: '#8b5cf6', bg: 'rgba(139,92,246,0.12)' },
-  gate: { color: '#27AE60', bg: 'rgba(39,174,96,0.12)' },
+  admin:  { color: '#2E75B6', bg: 'rgba(46,117,182,0.12)' },
+  staff:  { color: '#8b5cf6', bg: 'rgba(139,92,246,0.12)' },
+  gate:   { color: '#27AE60', bg: 'rgba(39,174,96,0.12)' },
+  viewer: { color: '#94a3b8', bg: 'rgba(148,163,184,0.12)' },
 }
 
 export default function DashboardPage() {
@@ -76,7 +78,6 @@ export default function DashboardPage() {
     }
 
     window.addEventListener('storage', handleStorage)
-
     return () => window.removeEventListener('storage', handleStorage)
   }, [router])
 
@@ -84,10 +85,10 @@ export default function DashboardPage() {
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    const isAdminAuth = localStorage.getItem('admin_auth')
-    const savedRole = localStorage.getItem('admin_role')
+    const isAdminAuth  = localStorage.getItem('admin_auth')
+    const savedRole    = localStorage.getItem('admin_role')
     const savedUsername = localStorage.getItem('admin_username')
-    const adminId = localStorage.getItem('admin_id')
+    const adminId      = localStorage.getItem('admin_id')
 
     if (isAdminAuth !== 'true' || !adminId) {
       router.replace('/dashboard/login')
@@ -96,18 +97,16 @@ export default function DashboardPage() {
 
     setRole(savedRole || 'gate')
     setUsername(savedUsername || 'Admin')
-    loadStats()
+
+    // gate مش محتاج stats
+    if (savedRole !== 'gate') {
+      loadStats()
+    }
   }, [router])
 
   // 3️⃣ logout من كل الأجهزة
   const logoutFromAllDevices = () => {
-    const forceLogoutValue = Date.now().toString()
-    localStorage.setItem('admin_force_logout_at', forceLogoutValue)
-    clearAdminLocalData()
-    router.replace('/dashboard/login')
-  }
-
-  const logout = () => {
+    localStorage.setItem('admin_force_logout_at', Date.now().toString())
     clearAdminLocalData()
     router.replace('/dashboard/login')
   }
@@ -116,19 +115,19 @@ export default function DashboardPage() {
   const badge = roleBadge[role] || { color: '#888', bg: 'rgba(136,136,136,0.1)' }
 
   const navCards = [
-    { key: 'events', href: '/dashboard/events', icon: '🎉', title: 'Manage Events', sub: 'Add, edit & delete events' },
-    { key: 'reservations', href: '/dashboard/reservations', icon: '📋', title: 'Reservations', sub: 'View & manage all bookings' },
-    { key: 'verify', href: '/dashboard/verify', icon: '🔍', title: 'Verify Entry', sub: 'Scan QR codes at the gate' },
-    { key: 'users', href: '/dashboard/users', icon: '👥', title: 'Manage Users', sub: 'Add & control admin access' },
+    { key: 'events',       href: '/dashboard/events',       icon: '🎉', title: 'Manage Events',  sub: 'Add, edit & delete events' },
+    { key: 'reservations', href: '/dashboard/reservations', icon: '📋', title: 'Reservations',    sub: 'View & manage all bookings' },
+    { key: 'verify',       href: '/dashboard/verify',       icon: '🔍', title: 'Verify Entry',    sub: 'Scan QR codes at the gate' },
+    { key: 'users',        href: '/dashboard/users',        icon: '👥', title: 'Manage Users',    sub: 'Add & control admin access' },
   ].filter((c) => can(c.key))
 
   const statCards = [
-    { label: 'Total Bookings', value: stats.total, color: '#fff' },
-    { label: 'Pending', value: stats.pending, color: '#F0A500' },
-    { label: 'Confirmed', value: stats.confirmed, color: '#27AE60' },
-    { label: 'Awaiting Payment', value: stats.awaiting, color: '#2E75B6' },
-    { label: 'Payment Review', value: stats.review, color: '#8b5cf6' },
-    { label: 'Rejected', value: stats.rejected, color: '#E74C3C' },
+    { label: 'Total Bookings',   value: stats.total,     color: '#fff' },
+    { label: 'Pending',          value: stats.pending,   color: '#F0A500' },
+    { label: 'Confirmed',        value: stats.confirmed, color: '#27AE60' },
+    { label: 'Awaiting Payment', value: stats.awaiting,  color: '#2E75B6' },
+    { label: 'Payment Review',   value: stats.review,    color: '#8b5cf6' },
+    { label: 'Rejected',         value: stats.rejected,  color: '#E74C3C' },
   ]
 
   return (
@@ -151,6 +150,8 @@ export default function DashboardPage() {
       />
 
       <div style={{ flex: 1, maxWidth: 1200, margin: '0 auto', width: '100%', padding: '96px 24px 80px' }}>
+
+        {/* Header */}
         <div style={{ marginBottom: 40 }}>
           <span style={{ color: '#2E75B6', fontSize: 11, fontWeight: 700, letterSpacing: '2.5px' }}>
             OVERVIEW
@@ -169,7 +170,34 @@ export default function DashboardPage() {
           </h1>
         </div>
 
-        {(role === 'admin' || role === 'staff') && (
+        {/* ── Viewer Banner ── */}
+        {role === 'viewer' && (
+          <div
+            style={{
+              background: 'rgba(148,163,184,0.06)',
+              border: '1px solid rgba(148,163,184,0.2)',
+              borderRadius: 14,
+              padding: '16px 20px',
+              marginBottom: 32,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+            }}
+          >
+            <span style={{ fontSize: 20 }}>👁️</span>
+            <div>
+              <p style={{ color: '#94a3b8', fontSize: 13, fontWeight: 700, margin: 0 }}>
+                View-Only Mode
+              </p>
+              <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: 12, margin: '2px 0 0' }}>
+                You can browse data but cannot make any changes.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* ── Stats — admin / staff / viewer ── */}
+        {(role === 'admin' || role === 'staff' || role === 'viewer') && (
           <>
             <div
               style={{
@@ -215,6 +243,7 @@ export default function DashboardPage() {
               ))}
             </div>
 
+            {/* Revenue — admin only */}
             {role === 'admin' && (
               <div
                 style={{
@@ -245,24 +274,9 @@ export default function DashboardPage() {
                   }}
                 >
                   {[
-                    {
-                      icon: '🎟️',
-                      label: 'Tickets Sold',
-                      value: stats.tickets.toString(),
-                      color: '#fff',
-                    },
-                    {
-                      icon: '💰',
-                      label: 'Revenue (beforee service fees)',
-                      value: `${stats.revenue.toLocaleString()} EGP`,
-                      color: '#27AE60',
-                    },
-                    {
-                      icon: '🏛️',
-                      label: 'Site Service Fees (8%)',
-                      value: `${stats.tax.toLocaleString()} EGP`,
-                      color: '#E74C3C',
-                    },
+                    { icon: '🎟️', label: 'Tickets Sold',                  value: stats.tickets.toString(),               color: '#fff' },
+                    { icon: '💰', label: 'Revenue (before service fees)',  value: `${stats.revenue.toLocaleString()} EGP`, color: '#27AE60' },
+                    { icon: '🏛️', label: 'Site Service Fees (8%)',         value: `${stats.tax.toLocaleString()} EGP`,    color: '#E74C3C' },
                   ].map((r) => (
                     <div
                       key={r.label}
@@ -303,6 +317,7 @@ export default function DashboardPage() {
           </>
         )}
 
+        {/* ── Nav Cards ── */}
         <div
           style={{
             display: 'grid',
@@ -351,10 +366,40 @@ export default function DashboardPage() {
                 <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13, margin: 0 }}>
                   {item.sub}
                 </p>
+
+                {/* VIEW ONLY badge للـ viewer */}
+                {role === 'viewer' && (
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      marginTop: 14,
+                      background: 'rgba(148,163,184,0.1)',
+                      border: '1px solid rgba(148,163,184,0.25)',
+                      color: '#94a3b8',
+                      fontSize: 9,
+                      fontWeight: 700,
+                      letterSpacing: '1.5px',
+                      padding: '3px 10px',
+                      borderRadius: 50,
+                    }}
+                  >
+                    VIEW ONLY
+                  </span>
+                )}
               </div>
             </Link>
           ))}
         </div>
+
+        {/* ── No Access Message ── */}
+        {navCards.length === 0 && role !== '' && (
+          <div style={{ textAlign: 'center', padding: '64px 24px', color: 'rgba(255,255,255,0.15)' }}>
+            <p style={{ fontSize: 40, marginBottom: 16 }}>🔒</p>
+            <p style={{ fontSize: 14, letterSpacing: '2px', fontWeight: 700 }}>
+              NO PAGES AVAILABLE FOR YOUR ROLE
+            </p>
+          </div>
+        )}
       </div>
 
       <Footer />
